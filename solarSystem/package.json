@@ -1,0 +1,8 @@
+{
+    "name": "solarSystem",
+    "version": "1.0.0",
+    "keywords": ["util", "functional", "server", "client", "browser"],
+    "author": "kar_y",
+    "contributors": [],
+    "dependencies": {}
+}
