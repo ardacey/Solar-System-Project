@@ -24,12 +24,12 @@ window.onload = function init() {
     gl.clearColor(1.0, 1.0, 1.0, 1.0);  // Beyaz arka plan
     gl.clear(gl.COLOR_BUFFER_BIT);
     
-    console.log(mat4.create());
     
     
     // Shader'ları başlat
     const program = initShaders(gl, "vertex-shader", "fragment-shader");
     gl.useProgram(program);
+    
     // Küre verilerini oluştur
     const sphereData = createSphere(1.0, 50, 50);  // Yarıçap 1, 20x20 dilim
     const buffers = setupBuffers(gl, sphereData);
@@ -119,20 +119,7 @@ function setupAttributesAndUniforms(gl, program, buffers) {
 function drawScene(gl, program, buffers, numIndices) {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    // Model ve projeksiyon matrislerini ayarlayın
-    const uModelViewMatrix = gl.getUniformLocation(program, "u_modelViewMatrix");
-    const uProjectionMatrix = gl.getUniformLocation(program, "u_projectionMatrix");
-
-    const modelViewMatrix = mat4.create();
-    const projectionMatrix = mat4.create();
-
-    mat4.perspective(projectionMatrix, Math.PI / 4, gl.canvas.width / gl.canvas.height, 0.1, 100.0);
-    mat4.lookAt(modelViewMatrix, [0, 0, 5], [0, 0, 0], [0, 1, 0]);
-
-    gl.uniformMatrix4fv(uModelViewMatrix, false, modelViewMatrix);
-    gl.uniformMatrix4fv(uProjectionMatrix, false, projectionMatrix);
-
     // Çizim işlemi
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indexBuffer);
-    gl.drawElements(gl.TRIANGLES, numIndices, gl.UNSIGNED_SHORT, 0);
+    gl.drawElements(gl.LINES, numIndices, gl.UNSIGNED_SHORT, 0);
 }
