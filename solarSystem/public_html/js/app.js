@@ -27,18 +27,18 @@ window.onload = function init() {
     
     
     // Shader'ları başlat
-    const program = initShaders(gl, "vertex-shader", "fragment-shader");
-    gl.useProgram(program);
+    const shaderProgram = initShaders(gl, "vertex-shader", "fragment-shader");
+    shaderProgram.useProgram();
     
     // Küre verilerini oluştur
     const sphereData = createSphere(1.0, 50, 50);  // Yarıçap 1, 20x20 dilim
     const buffers = setupBuffers(gl, sphereData);
 
     // Attribute'ları ve uniform'ları bağla
-    setupAttributesAndUniforms(gl, program, buffers);
+    setupAttributesAndUniforms(gl, shaderProgram, buffers);
 
     // Çizim işlemi
-    drawScene(gl, program, buffers, sphereData.indices.length);
+    drawScene(gl, shaderProgram, buffers, sphereData.indices.length);
     
 }
 
@@ -104,13 +104,13 @@ function setupBuffers(gl, sphereData) {
 
 function setupAttributesAndUniforms(gl, program, buffers) {
     // Vertex pozisyonlarını bağla
-    const positionLocation = gl.getAttribLocation(program, "vPosition");
+    const positionLocation = gl.getAttribLocation(program.program, "vPosition");
     gl.bindBuffer(gl.ARRAY_BUFFER, buffers.positionBuffer);
     gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(positionLocation);
 
     // Renk verilerini bağla
-    const colorLocation = gl.getAttribLocation(program, "vColor");
+    const colorLocation = gl.getAttribLocation(program.program, "vColor");
     gl.bindBuffer(gl.ARRAY_BUFFER, buffers.colorBuffer);
     gl.vertexAttribPointer(colorLocation, 4, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(colorLocation);
