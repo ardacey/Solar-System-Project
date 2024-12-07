@@ -5,7 +5,6 @@ let renderer;
 // glMatrix kütüphanesi kısayolları
 const mat4 = glMatrix.mat4;
 const vec3 = glMatrix.vec3;
-const vec4 = glMatrix.vec4;
 
 // Kamera matrisleri
 const viewMatrix = mat4.create();
@@ -42,7 +41,7 @@ const earth = new Planet(
 let simulationTime = 0;
 
 // Kamera pozisyonu ve hedefi
-const cameraPosition = vec3.fromValues(0, 5000000000, 5000000000);
+const cameraPosition = vec3.fromValues(0, 50, 250);
 const cameraTarget = vec3.fromValues(0, 0, 0);
 const cameraUp = vec3.fromValues(0, 1, 0);
 
@@ -68,8 +67,8 @@ window.onload = async function init() {
     // Projeksiyon matrisini ayarla
     const fieldOfView = 45 * Math.PI / 180;
     const aspect = canvas.width / canvas.height;
-    const zNear = 1000000;
-    const zFar = 10000000000;
+    const zNear = 1;
+    const zFar = 1000;
     mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
 
     // Kamera matrisini ayarla
@@ -95,16 +94,18 @@ function update(deltaTime) {
 // Render fonksiyonu
 function render() {
     renderer.clear();
-
-    // Güneş'i çiz
-    renderer.gl.uniform3f(renderer.uniforms.lightPosition, 0, 0, 0);
-    renderer.gl.uniform3f(renderer.uniforms.color, 1.0, 0.6, 0.0);
-    renderer.gl.uniform1f(renderer.uniforms.ambient, 0.8);
+    
+    // Işık pozisyonunu güneşin merkezine ayarla
+    renderer.setLightPosition(sun.position.x, sun.position.y, sun.position.z);
+    
+    // Güneşi çiz
+    renderer.setColor(1.0, 0.7, 0.0); // Sarı renk
+    renderer.setAmbient(0.8);
     renderer.drawCelestialBody(sun, viewMatrix, projectionMatrix);
-
-    // Dünya'yı çiz
-    renderer.gl.uniform3f(renderer.uniforms.color, 0.2, 0.5, 1.0);
-    renderer.gl.uniform1f(renderer.uniforms.ambient, 0.2);
+    
+    // Dünyayı çiz
+    renderer.setColor(0.2, 0.5, 1.0); // Mavi renk
+    renderer.setAmbient(0.1);
     renderer.drawCelestialBody(earth, viewMatrix, projectionMatrix);
 }
 

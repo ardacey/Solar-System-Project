@@ -11,11 +11,13 @@ uniform float uAmbient;
 out vec4 fragColor;
 
 void main() {
+    // Phong shading
     vec3 normal = normalize(vNormal);
     vec3 lightDir = normalize(uLightPosition - vPosition);
     
-    float diffuse = max(dot(normal, lightDir), 0.0);
-    vec3 color = uColor * (uAmbient + diffuse);
+    float diff = max(dot(normal, lightDir), 0.0);
+    vec3 diffuse = diff * uColor;
+    vec3 ambient = uAmbient * uColor;
     
-    fragColor = vec4(color, 1.0);
+    fragColor = vec4(ambient + diffuse, 1.0);
 }

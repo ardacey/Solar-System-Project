@@ -9,12 +9,10 @@ uniform mat4 uNormalMatrix;
 
 out vec3 vNormal;
 out vec3 vPosition;
-    
-void
-main()
-{
+
+void main() {
+    vNormal = normalize(mat3(uNormalMatrix) * aNormal);
     vec4 position = uModelViewMatrix * vec4(aPosition, 1.0);
     vPosition = position.xyz;
-    vNormal = normalize(mat3(uNormalMatrix) * aNormal);
     gl_Position = uProjectionMatrix * position;
 }

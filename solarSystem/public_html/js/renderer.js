@@ -4,6 +4,11 @@ class Renderer {
         this.program = null;
         this.sphereBuffers = null;
         this.sphereVertexCount = 0;
+        this.uniforms = {};
+        
+        // Ölçeklendirme faktörleri (z-Fighting önlemek için)
+        this.DISTANCE_SCALE = 1e-9;  // 1 birim = 1 milyar metre
+        this.SIZE_SCALE = 1e-7;      // 1 birim = 10 milyon metre
     }
 
     async initialize() {
@@ -33,6 +38,8 @@ class Renderer {
 
         // GL ayarları
         this.gl.enable(this.gl.DEPTH_TEST);
+        this.gl.depthFunc(this.gl.LEQUAL);
+        this.gl.clearDepth(1.0);
         this.gl.enable(this.gl.CULL_FACE);
     }
 
@@ -44,6 +51,11 @@ class Renderer {
         this.gl.shaderSource(vertexShader, vertexShaderSource);
         this.gl.compileShader(vertexShader);
 
+        if (!this.gl.getShaderParameter(vertexShader, this.gl.COMPILE_STATUS)) {
+            console.error('Vertex shader derleme hatası:', this.gl.getShaderInfoLog(vertexShader));
+            return null;
+        }
+
         // Fragment shader'ı yükle ve derle
         const fragmentShaderResponse = await fetch('glsl/fragment-shader.glsl');
         const fragmentShaderSource = await fragmentShaderResponse.text();
@@ -51,11 +63,21 @@ class Renderer {
         this.gl.shaderSource(fragmentShader, fragmentShaderSource);
         this.gl.compileShader(fragmentShader);
 
-        // Shader programını oluştur
+        if (!this.gl.getShaderParameter(fragmentShader, this.gl.COMPILE_STATUS)) {
+            console.error('Fragment shader derleme hatası:', this.gl.getShaderInfoLog(fragmentShader));
+            return null;
+        }
+
+        // Shader programını oluştur ve bağla
         const program = this.gl.createProgram();
         this.gl.attachShader(program, vertexShader);
         this.gl.attachShader(program, fragmentShader);
         this.gl.linkProgram(program);
+
+        if (!this.gl.getProgramParameter(program, this.gl.LINK_STATUS)) {
+            console.error('Shader program bağlama hatası:', this.gl.getProgramInfoLog(program));
+            return null;
+        }
 
         return program;
     }
@@ -124,18 +146,27 @@ class Renderer {
 
         // Model matrisi oluştur
         const modelMatrix = mat4.create();
-        mat4.translate(modelMatrix, modelMatrix, [
+        
+        // Pozisyonu ölçeklendir
+        const scaledPosition = vec3.create();
+        vec3.scale(scaledPosition, [
             celestialBody.position.x,
             celestialBody.position.y,
             celestialBody.position.z
-        ]);
+        ], this.DISTANCE_SCALE);
+
+        mat4.translate(modelMatrix, modelMatrix, scaledPosition);
+        
         mat4.rotateX(modelMatrix, modelMatrix, celestialBody.rotation.x);
         mat4.rotateY(modelMatrix, modelMatrix, celestialBody.rotation.y);
         mat4.rotateZ(modelMatrix, modelMatrix, celestialBody.rotation.z);
+
+        // Boyutu ölçeklendir
+        const scaledRadius = celestialBody.radius * this.SIZE_SCALE;
         mat4.scale(modelMatrix, modelMatrix, [
-            celestialBody.radius,
-            celestialBody.radius,
-            celestialBody.radius
+            scaledRadius,
+            scaledRadius,
+            scaledRadius
         ]);
 
         // Model-view matrisini hesapla
@@ -171,5 +202,20 @@ class Renderer {
     clear() {
         this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+    }
+
+    setLightPosition(x, y, z) {
+        this.gl.useProgram(this.program);
+        this.gl.uniform3f(this.uniforms.lightPosition, x, y, z);
+    }
+
+    setColor(r, g, b) {
+        this.gl.useProgram(this.program);
+        this.gl.uniform3f(this.uniforms.color, r, g, b);
+    }
+
+    setAmbient(value) {
+        this.gl.useProgram(this.program);
+        this.gl.uniform1f(this.uniforms.ambient, value);
     }
 }
