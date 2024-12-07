@@ -1,6 +1,6 @@
 "use strict";
 
-var gl;
+let gl;
 window.mat4 = glMatrix.mat4
 window.mat2 = glMatrix.mat2
 window.mat2d= glMatrix.mat2d
@@ -12,7 +12,7 @@ window.vec2= glMatrix.vec2
 window.vec3= glMatrix.vec3
 window.vec4= glMatrix.vec4
 
-window.onload = function init() {
+window.onload = async function init() {
     const canvas = document.querySelector("#glCanvas");
     gl = canvas.getContext("webgl2");
 
@@ -23,13 +23,11 @@ window.onload = function init() {
 
     gl.clearColor(1.0, 1.0, 1.0, 1.0);  // Beyaz arka plan
     gl.clear(gl.COLOR_BUFFER_BIT);
-    
-    
-    
+
     // Shader'ları başlat
-    const program = initShaders(gl, "vertex-shader", "fragment-shader");
+    const program = await createProgram(gl, 'glsl/vertex-shader.glsl', 'glsl/fragment-shader.glsl');
     gl.useProgram(program);
-    
+
     // Küre verilerini oluştur
     const sphereData = createSphere(1.0, 50, 50);  // Yarıçap 1, 20x20 dilim
     const buffers = setupBuffers(gl, sphereData);
@@ -39,7 +37,7 @@ window.onload = function init() {
 
     // Çizim işlemi
     drawScene(gl, program, buffers, sphereData.indices.length);
-    
+
 }
 
 

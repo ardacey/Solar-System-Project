@@ -3,33 +3,6 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
 <title>Solar System</title>
-
-
-<script id="vertex-shader" type="x-shader/x-vertex">#version 300 es
-in vec4 vPosition;
-in vec4 vColor; 
-
-out vec4 fColor;
-
-void
-main()
-{
-    gl_Position = vPosition;
-    fColor = vColor; 
-}
-</script>
-
-
-<script id="fragment-shader" type="x-shader/x-fragment">#version 300 es
-precision mediump float;
-in vec4 fColor; 
-out vec4 outColor;
-
-void main()
-{
-    outColor = fColor; 
-}
-</script>
 <script src="js/gl-matrix.js"></script>
 <script src="js/initialize.js" ></script>
 <script src="js/app.js" ></script>
