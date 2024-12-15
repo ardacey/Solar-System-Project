@@ -45,6 +45,12 @@ const cameraPosition = vec3.fromValues(0, 50, 250);
 const cameraTarget = vec3.fromValues(0, 0, 0);
 const cameraUp = vec3.fromValues(0, 1, 0);
 
+let isDragging = false;
+let lastMouseX = 0;
+let lastMouseY = 0;
+let yaw = 0;
+let pitch = 0;
+
 window.onload = async function init() {
     // Canvas ve WebGL bağlamını al
     const canvas = document.querySelector("#glCanvas");
@@ -74,13 +80,77 @@ window.onload = async function init() {
     // Kamera matrisini ayarla
     mat4.lookAt(viewMatrix, cameraPosition, cameraTarget, cameraUp);
 
+    canvas.addEventListener("mousedown", onMouseDown);
+    canvas.addEventListener("mouseup", onMouseUp);
+    canvas.addEventListener("mousemove", onMouseMove);
+    canvas.addEventListener("wheel", onMouseWheel);
+
+    document.getElementById("centerSun").addEventListener("click", function() {
+        centerCameraOn(sun);
+    });
+    
+    document.getElementById("centerEarth").addEventListener("click", function() {
+        centerCameraOn(earth);
+    });    
+
     // Animasyon döngüsünü başlat
     requestAnimationFrame(animate);
 };
 
+function onMouseDown(event) {
+    isDragging = true;
+    lastMouseX = event.clientX;
+    lastMouseY = event.clientY;
+}
+
+function onMouseUp(event) {
+    isDragging = false;
+}
+
+function onMouseMove(event) {
+    if (!isDragging) return;
+
+    const deltaX = event.clientX - lastMouseX;
+    const deltaY = event.clientY - lastMouseY;
+
+    yaw += deltaX * 0.1;
+    pitch -= deltaY * 0.1;
+
+    pitch = Math.max(-90, Math.min(90, pitch));
+
+    const radius = vec3.length(cameraPosition);
+    cameraPosition[0] = radius * Math.cos(degreesToRadians(pitch)) * Math.sin(degreesToRadians(yaw));
+    cameraPosition[1] = radius * Math.sin(degreesToRadians(pitch));
+    cameraPosition[2] = radius * Math.cos(degreesToRadians(pitch)) * Math.cos(degreesToRadians(yaw));
+
+    mat4.lookAt(viewMatrix, cameraPosition, cameraTarget, cameraUp);
+
+    lastMouseX = event.clientX;
+    lastMouseY = event.clientY;
+}
+
+function degreesToRadians(degrees) {
+    return degrees * Math.PI / 180;
+}
+
+function onMouseWheel(event) {
+    cameraPosition[2] += event.deltaY;
+    cameraPosition[2] = Math.min(Math.max(cameraPosition[2], 50), 500);
+}
+
+function centerCameraOn(body) {
+    cameraTarget[0] = body.position.x;
+    cameraTarget[1] = body.position.y;
+    cameraTarget[2] = body.position.z;
+
+    mat4.lookAt(viewMatrix, cameraPosition, cameraTarget, cameraUp);
+}
+
 // Her frame'de çağrılacak güncelleme fonksiyonu
 function update(deltaTime) {
     simulationTime += deltaTime;
+
+    mat4.lookAt(viewMatrix, cameraPosition, cameraTarget, cameraUp);
     
     // Dünya'nın yörünge ve dönüş hareketlerini güncelle
     earth.updateOrbitalPosition(sun, simulationTime);
