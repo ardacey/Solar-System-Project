@@ -1,23 +1,18 @@
 // Temel gök cismi sınıfı
 class CelestialBody {
-    constructor(name, mass, radius, surfaceTemperature, velocity, rotationPeriod, 
-                obliquity, argumentOfObliquity, yaw) {
+    constructor(name, mass, radius, surfaceTemperature, angularVelocity, rotationPeriod, 
+                obliquity, argumentOfObliquity, yaw, position) {
         this.name = name;
         this.mass = mass;
         this.radius = radius;
         this.surfaceTemperature = surfaceTemperature;
-        this.velocity = {
-            x: velocity.x || 0,
-            y: velocity.y || 0,
-            z: velocity.z || 0
-        };
+        this.angularVelocity = angularVelocity;
         this.rotationPeriod = rotationPeriod;
         this.obliquity = obliquity;
         this.argumentOfObliquity = argumentOfObliquity;
         this.yaw = yaw;
-        
-        // Konum ve dönüş bilgilerini tut
-        this.position = { x: 0, y: 0, z: 0 };
+        this.position = position;
+
         this.rotation = { x: 0, y: 0, z: 0 };
     }
 
@@ -35,10 +30,10 @@ class CelestialBody {
 
 // Yıldız sınıfı
 class Star extends CelestialBody {
-    constructor(name, mass, radius, surfaceTemperature, luminosity, velocity, 
-                rotationPeriod, obliquity, argumentOfObliquity, yaw) {
-        super(name, mass, radius, surfaceTemperature, velocity, rotationPeriod, 
-              obliquity, argumentOfObliquity, yaw);
+    constructor(name, mass, radius, surfaceTemperature, angularVelocity,
+                rotationPeriod, obliquity, argumentOfObliquity, yaw, position, luminosity) {
+        super(name, mass, radius, surfaceTemperature, angularVelocity, rotationPeriod, 
+              obliquity, argumentOfObliquity, yaw, position);
         this.luminosity = luminosity;
     }
 
@@ -50,16 +45,18 @@ class Star extends CelestialBody {
 
 // Gezegen sınıfı
 class Planet extends CelestialBody {
-    constructor(name, mass, radius, surfaceTemperature, velocity, rotationPeriod, 
-                obliquity, argumentOfObliquity, yaw, orbitalPeriod) {
-        super(name, mass, radius, surfaceTemperature, velocity, rotationPeriod, 
-              obliquity, argumentOfObliquity, yaw);
+    constructor(name, mass, radius, surfaceTemperature, angularVelocity, rotationPeriod, 
+                obliquity, argumentOfObliquity, yaw, position, orbitalPeriod, orbitalDistance, angle) {
+        super(name, mass, radius, surfaceTemperature, angularVelocity, rotationPeriod, 
+              obliquity, argumentOfObliquity, yaw, position);
         this.orbitalPeriod = orbitalPeriod;
+        this.orbitalDistance = orbitalDistance;
+        this.angle = angle;
     }
 
     // Yörünge konumunu güncelle
-    updateOrbitalPosition(centralStar, time) {
-        const newPosition = CelestialMechanics.calculateOrbitalPosition(this, centralStar, time);
+    updateOrbitalPosition(time) {
+        const newPosition = CelestialMechanics.calculateOrbitalPosition(this, time);
         this.updatePosition(newPosition);
     }
 

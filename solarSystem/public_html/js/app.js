@@ -16,12 +16,13 @@ const sun = new Star(
     1.989e30,    // kütle (kg)
     696340000,   // yarıçap (m)
     5778,        // yüzey sıcaklığı (K)
-    3.828e26,    // aydınlatma gücü (W)
-    0,           // hız (m/s)
+    0,           // açısal hız (rad/s)
     25.38 * 24 * 3600, // kendi etrafında dönme süresi (saniye)
     7.25,        // eksen eğikliği (derece)
     0,           // eğiklik değişkeni (derece)
-    0            // phi (derece)
+    0,           // phi (derece)
+    { x: 0, y: 0, z: 0 }, // konum
+    3.828e26,    // aydınlatma gücü (W)
 );
 
 const earth = new Planet(
@@ -29,16 +30,15 @@ const earth = new Planet(
     5.972e24,    // kütle (kg)
     6371000,     // yarıçap (m)
     288,         // yüzey sıcaklığı (K)
-    {        // vektörel hız
-        x: 29.78e3, // km/s
-        y: 0,
-        z: 0
-    },
+    7.2921159e-5,// açısal hız (rad/s)
     24 * 3600,   // kendi etrafında dönme süresi (saniye)
     23.44,       // eksen eğikliği (derece)
     0,           // eğiklik değişkeni (derece)
     0,           // phi (derece)
-    365.256 * 24 * 3600  // yörünge periyodu (saniye)
+    { x: 149.6e8, y: 0, z: 0 }, // konum
+    365.256 * 24 * 3600,  // yörünge periyodu (saniye)
+    149.6e9,      // yörünge mesafesi (m)
+    0,            // açı (derece)
 );
 
 // Simülasyon zamanı (saniye)
@@ -153,7 +153,8 @@ function centerCameraOn(body) {
 
 // Her frame'de çağrılacak güncelleme fonksiyonu
 function update(deltaTime) {
-    simulationTime += deltaTime * timeMultiplier;
+    deltaTime = deltaTime * timeMultiplier;
+    simulationTime += deltaTime;
 
     centerCameraOn(currentPlanet);
 
@@ -165,7 +166,7 @@ function update(deltaTime) {
     mat4.lookAt(viewMatrix, cameraPosition, cameraTarget, cameraUp);
     
     // Dünya'nın yörünge ve dönüş hareketlerini güncelle
-    earth.updateOrbitalPosition(sun, simulationTime);
+    earth.updateOrbitalPosition(deltaTime);
     earth.updateRotation(deltaTime * timeMultiplier);
     earth.updateSurfaceTemperature(sun);
 
@@ -180,7 +181,7 @@ function render() {
     renderer.clear();
     
     // Işık pozisyonunu güneşin merkezine ayarla
-    renderer.setLightPosition(sun.position.x, sun.position.y, sun.position.z);
+    renderer.setLightPosition(0, 0, 0);
     
     // Güneşi çiz
     renderer.setColor(1.0, 0.7, 0.0); // Sarı renk
@@ -189,7 +190,8 @@ function render() {
     
     // Dünyayı çiz
     renderer.setColor(0.2, 0.5, 1.0); // Mavi renk
-    renderer.setAmbient(0.1);
+    // renderer.setAmbient(0.1);
+    renderer.setAmbient(1);
     renderer.drawCelestialBody(earth, viewMatrix, projectionMatrix);
 }
 
@@ -217,22 +219,27 @@ function updateInfoBox(planet) {
     const obliquity = planet.obliquity || 0;
     const argumentOfObliquity = planet.argumentOfObliquity || 0;
     const yaw = planet.yaw || 0;
-    const orbitalPeriod = planet.orbitalPeriod || 0;
-    const luminosity = planet.luminosity || 0;
     const position = planet.position || { x: 0, y: 0, z: 0 };
+    const orbitalPeriod = planet.orbitalPeriod || 0;
+    const orbitalDistance = planet.orbitalDistance || 0;
+    const angle = planet.angle || 0;
+    const luminosity = planet.luminosity || 0;
 
     infoContent.innerHTML = `
         <strong>Name:</strong> ${name} <br>
         <strong>Mass:</strong> ${mass.toExponential(2)} kg <br>
         <strong>Radius:</strong> ${radius.toFixed(2)} m <br>
         <strong>Temperature:</strong> ${temperature.toFixed(2)} K <br>
-        <strong>Velocity:</strong> (${velocity.x.toFixed(2)}, ${velocity.y.toFixed(2)}, ${velocity.z.toFixed(2)}) m/s <br>
+        <strong>Velocity:</strong> ${velocity.toFixed(2)} rad/s <br>
         <strong>Rotation Period:</strong> ${rotationPeriod.toFixed(2)} s <br>
         <strong>Obliquity:</strong> ${obliquity.toFixed(2)}° <br>
         <strong>Argument of Obliquity:</strong> ${argumentOfObliquity.toFixed(2)}° <br>
         <strong>Yaw:</strong> ${yaw.toFixed(2)}° <br>
-        <strong>Orbital Period:</strong> ${orbitalPeriod.toFixed(2)} s <br>
-        <strong>Luminosity:</strong> ${luminosity.toExponential(2)} W <br>
         <strong>Position:</strong> (${position.x.toFixed(2)}, ${position.y.toFixed(2)}, ${position.z.toFixed(2)}) <br>
+        <strong>Orbital Period:</strong> ${orbitalPeriod.toFixed(2)} s <br>
+        <strong>Orbital Distance:</strong> ${orbitalDistance.toExponential(2)} m <br>
+        <strong>Angle:</strong> ${angle.toFixed(2)}° <br>
+        <strong>Luminosity:</strong> ${luminosity.toExponential(2)} W <br>
+
     `;
 }

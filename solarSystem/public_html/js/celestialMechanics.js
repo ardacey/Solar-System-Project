@@ -18,15 +18,6 @@ class CelestialMechanics {
         return 2 * Math.PI * Math.sqrt(Math.pow(semiMajorAxis, 3) / (this.G * centralMass));
     }
 
-    // Gök cisminin yeni konumunu hesapla
-    static updatePosition(currentPosition, velocity, deltaTime) {
-        return {
-            x: currentPosition.x + velocity.x * deltaTime,
-            y: currentPosition.y + velocity.y * deltaTime,
-            z: currentPosition.z + velocity.z * deltaTime
-        };
-    }
-
     // Dönme açısını hesapla
     static calculateRotationAngle(rotationPeriod, deltaTime) {
         return (2 * Math.PI * deltaTime) / rotationPeriod;
@@ -49,16 +40,22 @@ class CelestialMechanics {
     }
 
     // Gezegen için yörünge konumunu hesapla
-    static calculateOrbitalPosition(planet, centralStar, time) {
-        // Vektörel hız kullanarak yeni pozisyonu hesapla
-        const deltaTime = time - planet.lastUpdateTime || 0;
-        planet.lastUpdateTime = time;
-        
-        // v = dr/dt formülü kullanarak pozisyonu güncelle
+    static calculateOrbitalPosition(planet, deltaTime) {
+        // Extract relevant orbital parameters
+        const { angularVelocity, orbitalDistance, angle } = planet;
+    
+        // Calculate the change in angle using angular velocity
+        const deltaAngle = angularVelocity * deltaTime;
+
+        // Update the current angle
+        const newAngle = angle + deltaAngle;
+        planet.angle = newAngle;
+    
+        // Calculate the new position using polar-to-Cartesian conversion
         return {
-            x: planet.position.x + planet.velocity.x * deltaTime,
-            y: planet.position.y + planet.velocity.y * deltaTime,
-            z: planet.position.z + planet.velocity.z * deltaTime
+            x: orbitalDistance * Math.cos(newAngle),
+            y: orbitalDistance * Math.sin(newAngle),
+            z: 0 // Assume orbit is in a 2D plane; update if needed for 3D
         };
     }
 
