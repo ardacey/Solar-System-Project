@@ -21,7 +21,7 @@ const sun = new Star(
     25.38 * 24 * 3600, // kendi etrafında dönme süresi (saniye)
     7.25,        // eksen eğikliği (derece)
     0,           // eğiklik değişkeni (derece)
-    0            // yaw (derece)
+    0            // phi (derece)
 );
 
 const earth = new Planet(
@@ -33,7 +33,7 @@ const earth = new Planet(
     24 * 3600,   // kendi etrafında dönme süresi (saniye)
     23.44,       // eksen eğikliği (derece)
     0,           // eğiklik değişkeni (derece)
-    0,           // yaw (derece)
+    0,           // phi (derece)
     365.256 * 24 * 3600  // yörünge periyodu (saniye)
 );
 
@@ -44,12 +44,13 @@ let simulationTime = 0;
 const cameraPosition = vec3.fromValues(0, 50, 250);
 const cameraTarget = vec3.fromValues(0, 0, 0);
 const cameraUp = vec3.fromValues(0, 1, 0);
+let currentPlanet = sun;
 
 let isDragging = false;
 let lastMouseX = 0;
 let lastMouseY = 0;
-let yaw = 0;
-let pitch = 0;
+let phi = 0;
+let theta = 0;
 
 window.onload = async function init() {
     // Canvas ve WebGL bağlamını al
@@ -86,11 +87,11 @@ window.onload = async function init() {
     canvas.addEventListener("wheel", onMouseWheel);
 
     document.getElementById("centerSun").addEventListener("click", function() {
-        centerCameraOn(sun);
+        currentPlanet = sun;
     });
     
     document.getElementById("centerEarth").addEventListener("click", function() {
-        centerCameraOn(earth);
+        currentPlanet = earth;
     });    
 
     // Animasyon döngüsünü başlat
@@ -113,17 +114,10 @@ function onMouseMove(event) {
     const deltaX = event.clientX - lastMouseX;
     const deltaY = event.clientY - lastMouseY;
 
-    yaw += deltaX * 0.1;
-    pitch -= deltaY * 0.1;
+    phi += deltaX * 0.1;
+    theta -= deltaY * 0.1;
 
-    pitch = Math.max(-90, Math.min(90, pitch));
-
-    const radius = vec3.length(cameraPosition);
-    cameraPosition[0] = radius * Math.cos(degreesToRadians(pitch)) * Math.sin(degreesToRadians(yaw));
-    cameraPosition[1] = radius * Math.sin(degreesToRadians(pitch));
-    cameraPosition[2] = radius * Math.cos(degreesToRadians(pitch)) * Math.cos(degreesToRadians(yaw));
-
-    mat4.lookAt(viewMatrix, cameraPosition, cameraTarget, cameraUp);
+    theta = Math.max(-90, Math.min(90, theta));
 
     lastMouseX = event.clientX;
     lastMouseY = event.clientY;
@@ -150,6 +144,13 @@ function centerCameraOn(body) {
 function update(deltaTime) {
     simulationTime += deltaTime;
 
+    centerCameraOn(currentPlanet);
+
+    const radius = vec3.length(cameraPosition);
+    cameraPosition[0] = radius * Math.cos(degreesToRadians(theta)) * Math.sin(degreesToRadians(phi));
+    cameraPosition[1] = radius * Math.sin(degreesToRadians(theta));
+    cameraPosition[2] = radius * Math.cos(degreesToRadians(theta)) * Math.cos(degreesToRadians(phi));
+
     mat4.lookAt(viewMatrix, cameraPosition, cameraTarget, cameraUp);
     
     // Dünya'nın yörünge ve dönüş hareketlerini güncelle
@@ -159,6 +160,8 @@ function update(deltaTime) {
     
     // Güneş'in kendi ekseni etrafında dönüşünü güncelle
     sun.updateRotation(deltaTime);
+
+    updateInfoBox(currentPlanet);
 }
 
 // Render fonksiyonu
@@ -189,4 +192,36 @@ function animate(currentTime) {
     render();
     
     requestAnimationFrame(animate);
+}
+
+function updateInfoBox(planet) {
+    const infoContent = document.getElementById("infoContent");
+
+    const name = planet.name;
+    const mass = planet.mass || 0;
+    const radius = planet.radius || 0;
+    const temperature = planet.surfaceTemperature || 0;
+    const velocity = planet.velocity || 0;
+    const rotationPeriod = planet.rotationPeriod || 0;
+    const obliquity = planet.obliquity || 0;
+    const argumentOfObliquity = planet.argumentOfObliquity || 0;
+    const yaw = planet.yaw || 0;
+    const orbitalPeriod = planet.orbitalPeriod || 0;
+    const luminosity = planet.luminosity || 0;
+    const position = planet.position || { x: 0, y: 0, z: 0 };
+
+    infoContent.innerHTML = `
+        <strong>Name:</strong> ${name} <br>
+        <strong>Mass:</strong> ${mass.toExponential(2)} kg <br>
+        <strong>Radius:</strong> ${radius.toFixed(2)} m <br>
+        <strong>Temperature:</strong> ${temperature.toFixed(2)} K <br>
+        <strong>Velocity:</strong> ${velocity.toFixed(2)} m/s <br>
+        <strong>Rotation Period:</strong> ${rotationPeriod.toFixed(2)} s <br>
+        <strong>Obliquity:</strong> ${obliquity.toFixed(2)}° <br>
+        <strong>Argument of Obliquity:</strong> ${argumentOfObliquity.toFixed(2)}° <br>
+        <strong>Yaw:</strong> ${yaw.toFixed(2)}° <br>
+        <strong>Orbital Period:</strong> ${orbitalPeriod.toFixed(2)} s <br>
+        <strong>Luminosity:</strong> ${luminosity.toExponential(2)} W <br>
+        <strong>Position:</strong> (${position.x.toFixed(2)}, ${position.y.toFixed(2)}, ${position.z.toFixed(2)}) <br>
+    `;
 }
