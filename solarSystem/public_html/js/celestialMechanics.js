@@ -50,17 +50,15 @@ class CelestialMechanics {
 
     // Gezegen için yörünge konumunu hesapla
     static calculateOrbitalPosition(planet, centralStar, time) {
-        // Basit dairesel yörünge için hesaplama
-        const distance = Math.sqrt(
-            Math.pow(planet.velocity, 2) * planet.orbitalPeriod / (2 * Math.PI)
-        );
+        // Vektörel hız kullanarak yeni pozisyonu hesapla
+        const deltaTime = time - planet.lastUpdateTime || 0;
+        planet.lastUpdateTime = time;
         
-        const angularPosition = (2 * Math.PI * time) / planet.orbitalPeriod;
-        
+        // v = dr/dt formülü kullanarak pozisyonu güncelle
         return {
-            x: distance * Math.cos(angularPosition),
-            y: 0, // Basitleştirme için düzlemsel yörünge varsayıyoruz
-            z: distance * Math.sin(angularPosition)
+            x: planet.position.x + planet.velocity.x * deltaTime,
+            y: planet.position.y + planet.velocity.y * deltaTime,
+            z: planet.position.z + planet.velocity.z * deltaTime
         };
     }
 

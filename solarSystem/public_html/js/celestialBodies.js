@@ -6,7 +6,11 @@ class CelestialBody {
         this.mass = mass;
         this.radius = radius;
         this.surfaceTemperature = surfaceTemperature;
-        this.velocity = velocity;
+        this.velocity = {
+            x: velocity.x || 0,
+            y: velocity.y || 0,
+            z: velocity.z || 0
+        };
         this.rotationPeriod = rotationPeriod;
         this.obliquity = obliquity;
         this.argumentOfObliquity = argumentOfObliquity;

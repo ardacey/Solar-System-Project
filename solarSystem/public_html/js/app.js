@@ -29,7 +29,11 @@ const earth = new Planet(
     5.972e24,    // kütle (kg)
     6371000,     // yarıçap (m)
     288,         // yüzey sıcaklığı (K)
-    29780,       // yörünge hızı (m/s)
+    {        // vektörel hız
+        x: 29.78e3, // km/s
+        y: 0,
+        z: 0
+    },
     24 * 3600,   // kendi etrafında dönme süresi (saniye)
     23.44,       // eksen eğikliği (derece)
     0,           // eğiklik değişkeni (derece)
@@ -39,6 +43,7 @@ const earth = new Planet(
 
 // Simülasyon zamanı (saniye)
 let simulationTime = 0;
+let timeMultiplier = 1;
 
 // Kamera pozisyonu ve hedefi
 const cameraPosition = vec3.fromValues(0, 50, 250);
@@ -92,7 +97,15 @@ window.onload = async function init() {
     
     document.getElementById("centerEarth").addEventListener("click", function() {
         currentPlanet = earth;
-    });    
+    }); 
+    
+    const timeSlider = document.getElementById("timeSlider");
+    const timeSpeedLabel = document.getElementById("timeSpeedLabel");
+
+    timeSlider.addEventListener("input", function () {
+        timeMultiplier = parseFloat(timeSlider.value);
+        timeSpeedLabel.textContent = `${timeMultiplier.toFixed(1)}x`;
+    });
 
     // Animasyon döngüsünü başlat
     requestAnimationFrame(animate);
@@ -117,8 +130,6 @@ function onMouseMove(event) {
     phi += deltaX * 0.1;
     theta -= deltaY * 0.1;
 
-    theta = Math.max(-90, Math.min(90, theta));
-
     lastMouseX = event.clientX;
     lastMouseY = event.clientY;
 }
@@ -142,7 +153,7 @@ function centerCameraOn(body) {
 
 // Her frame'de çağrılacak güncelleme fonksiyonu
 function update(deltaTime) {
-    simulationTime += deltaTime;
+    simulationTime += deltaTime * timeMultiplier;
 
     centerCameraOn(currentPlanet);
 
@@ -155,11 +166,11 @@ function update(deltaTime) {
     
     // Dünya'nın yörünge ve dönüş hareketlerini güncelle
     earth.updateOrbitalPosition(sun, simulationTime);
-    earth.updateRotation(deltaTime);
+    earth.updateRotation(deltaTime * timeMultiplier);
     earth.updateSurfaceTemperature(sun);
-    
+
     // Güneş'in kendi ekseni etrafında dönüşünü güncelle
-    sun.updateRotation(deltaTime);
+    sun.updateRotation(deltaTime * timeMultiplier);
 
     updateInfoBox(currentPlanet);
 }
@@ -215,7 +226,7 @@ function updateInfoBox(planet) {
         <strong>Mass:</strong> ${mass.toExponential(2)} kg <br>
         <strong>Radius:</strong> ${radius.toFixed(2)} m <br>
         <strong>Temperature:</strong> ${temperature.toFixed(2)} K <br>
-        <strong>Velocity:</strong> ${velocity.toFixed(2)} m/s <br>
+        <strong>Velocity:</strong> (${velocity.x.toFixed(2)}, ${velocity.y.toFixed(2)}, ${velocity.z.toFixed(2)}) m/s <br>
         <strong>Rotation Period:</strong> ${rotationPeriod.toFixed(2)} s <br>
         <strong>Obliquity:</strong> ${obliquity.toFixed(2)}° <br>
         <strong>Argument of Obliquity:</strong> ${argumentOfObliquity.toFixed(2)}° <br>
