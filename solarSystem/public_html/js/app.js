@@ -98,13 +98,25 @@ window.onload = async function init() {
     document.getElementById("centerEarth").addEventListener("click", function() {
         currentPlanet = earth;
     }); 
-    
+
+    // Time slider ve input kontrollerini ayarla
     const timeSlider = document.getElementById("timeSlider");
+    const timeInput = document.getElementById("timeInput");
     const timeSpeedLabel = document.getElementById("timeSpeedLabel");
 
-    timeSlider.addEventListener("input", function () {
-        timeMultiplier = parseFloat(timeSlider.value);
-        timeSpeedLabel.textContent = `${timeMultiplier.toFixed(1)}x`;
+    timeSlider.addEventListener("input", function() {
+        timeMultiplier = parseInt(this.value);
+        timeInput.value = timeMultiplier;
+        timeSpeedLabel.textContent = timeMultiplier + "x";
+    });
+
+    timeInput.addEventListener("input", function() {
+        const value = parseInt(this.value);
+        if (value >= 1 && value <= 1000000) {
+            timeMultiplier = value;
+            timeSlider.value = value;
+            timeSpeedLabel.textContent = value + "x";
+        }
     });
 
     // Animasyon döngüsünü başlat
