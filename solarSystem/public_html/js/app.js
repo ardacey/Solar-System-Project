@@ -85,6 +85,9 @@ window.onload = async function init() {
 
     // Kamera matrisini ayarla
     mat4.lookAt(viewMatrix, cameraPosition, cameraTarget, cameraUp);
+    
+    sunTexture = renderer.loadTexture("8k_sun.jpg");
+    earthTexture = renderer.loadTexture("8k_sun.jpg");
 
     canvas.addEventListener("mousedown", onMouseDown);
     canvas.addEventListener("mouseup", onMouseUp);
@@ -186,13 +189,13 @@ function render() {
     // Güneşi çiz
     renderer.setColor(1.0, 0.7, 0.0); // Sarı renk
     renderer.setAmbient(0.8);
-    renderer.drawCelestialBody(sun, viewMatrix, projectionMatrix);
+    renderer.drawCelestialBody(sun, viewMatrix, projectionMatrix, sunTexture);
     
     // Dünyayı çiz
     renderer.setColor(0.2, 0.5, 1.0); // Mavi renk
     // renderer.setAmbient(0.1);
     renderer.setAmbient(1);
-    renderer.drawCelestialBody(earth, viewMatrix, projectionMatrix);
+    renderer.drawCelestialBody(earth, viewMatrix, projectionMatrix, earthTexture);
 }
 
 // Animasyon döngüsü
