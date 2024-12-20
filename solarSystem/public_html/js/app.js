@@ -142,8 +142,23 @@ function degreesToRadians(degrees) {
 }
 
 function onMouseWheel(event) {
-    cameraPosition[2] += event.deltaY;
-    cameraPosition[2] = Math.min(Math.max(cameraPosition[2], 50), 500);
+    const zoomFactor = -event.deltaY * 0.1;
+    const direction = vec3.create();
+
+    vec3.subtract(direction, cameraTarget, cameraPosition);
+    vec3.normalize(direction, direction);
+
+    vec3.scaleAndAdd(cameraPosition, cameraPosition, direction, zoomFactor);
+
+    const minDistance = 50;
+    const maxDistance = 500;
+    const currentDistance = vec3.distance(cameraPosition, cameraTarget);
+
+    if (currentDistance < minDistance) {
+        vec3.scaleAndAdd(cameraPosition, cameraTarget, direction, -minDistance);
+    } else if (currentDistance > maxDistance) {
+        vec3.scaleAndAdd(cameraPosition, cameraTarget, direction, maxDistance);
+    }
 }
 
 function centerCameraOn(body) {
