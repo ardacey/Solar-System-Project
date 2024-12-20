@@ -157,7 +157,7 @@ function onMouseWheel(event) {
     if (currentDistance < minDistance) {
         vec3.scaleAndAdd(cameraPosition, cameraTarget, direction, -minDistance);
     } else if (currentDistance > maxDistance) {
-        vec3.scaleAndAdd(cameraPosition, cameraTarget, direction, maxDistance);
+        vec3.scaleAndAdd(cameraPosition, cameraTarget, direction, maxDistance - currentDistance);
     }
 }
 
