@@ -27,13 +27,15 @@ class Renderer {
             normalMatrix: this.gl.getUniformLocation(this.program, 'uNormalMatrix'),
             lightPosition: this.gl.getUniformLocation(this.program, 'uLightPosition'),
             color: this.gl.getUniformLocation(this.program, 'uColor'),
-            ambient: this.gl.getUniformLocation(this.program, 'uAmbient')
+            ambient: this.gl.getUniformLocation(this.program, 'uAmbient'),
+            texture: this.gl.getUniformLocation(this.program, 'uTexture')
         };
 
         // Attribute lokasyonlarını al
         this.attributes = {
             position: this.gl.getAttribLocation(this.program, 'aPosition'),
-            normal: this.gl.getAttribLocation(this.program, 'aNormal')
+            normal: this.gl.getAttribLocation(this.program, 'aNormal'),
+            uv: this.gl.getAttribLocation(this.program, 'uv')
         };
 
         // GL ayarları
