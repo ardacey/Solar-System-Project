@@ -22,6 +22,8 @@ class Camera{
     radius;
     constructor(position = vec3.fromValues(0,0,0), up = vec3.fromValues(0,1,0), yaw = YAW, pitch = PITCH, target = vec3.fromValues(0, 0, 0), radius = -1000) {
         this.front = vec3.fromValues(0,0,-1);
+        this.right = vec3.create();
+        this.up = vec3.create();
         this.movementSpeed = SPEED;
         this.mouseSensitivity = SENSITIVITY;
         this.zoom = ZOOM;
@@ -40,14 +42,13 @@ class Camera{
 
 
     updateCameraVectors() {
-        let posX = this.target[0] + this.radius * Math.cos(glMatrix.toRadian(this.yaw)) * Math.cos(glMatrix.toRadian(this.pitch));
-        let posY = this.target[1] + this.radius * Math.sin(glMatrix.toRadian(this.pitch));
-        let posZ = this.target[2] + this.radius * Math.sin(glMatrix.toRadian(this.yaw)) * Math.cos(glMatrix.toRadian(this.pitch));
+        let posX = this.target[0] + this.radius * Math.cos(gl_Matrix.toRadian(this.yaw)) * Math.cos(gl_Matrix.toRadian(this.pitch));
+        let posY = this.target[1] + this.radius * Math.sin(gl_Matrix.toRadian(this.pitch));
+        let posZ = this.target[2] + this.radius * Math.sin(gl_Matrix.toRadian(this.yaw)) * Math.cos(gl_Matrix.toRadian(this.pitch));
 
         this.position = vec3.fromValues(posX, posY, posZ);
 
         vec3.normalize(this.front,vec3.sub(this.front,this.target, this.position));
-
         vec3.normalize(this.right,vec3.cross(this.right,this.front, this.worldUp));
         vec3.normalize(this.up,vec3.cross(this.up,this.right, this.front));
     }

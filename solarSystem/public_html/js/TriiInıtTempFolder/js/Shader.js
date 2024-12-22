@@ -69,7 +69,7 @@ class Shader {
     setUniform4fMatrix(variableName, values){
         let gl = this.gl;
         this.useProgram();
-        gl.uniformMatrix4fv(gl.getUniformLocation(this.program,variableName),false, new Float32Array(flatten(values)));
+        gl.uniformMatrix4fv(gl.getUniformLocation(this.program,variableName),false, new Float32Array(values));
     }
 
 }

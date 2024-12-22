@@ -50,12 +50,13 @@ class Scene {
     }
 
     getProjectionMatrix(){
-        let projectionMatrix = mat4.perspective(mat4.create(),glMatrix.toRadian(this.camera.zoom),
+        let projectionMatrix = mat4.perspective(mat4.create(),gl_Matrix.toRadian(this.camera.zoom),
             this.canvas.width/this.canvas.height,30.0,10000.0);
         return projectionMatrix;
     }
 
     updateMatrices(model,view,projection,shader) {
+        console.log(model)
         shader.setUniform4fMatrix("model",model);
         shader.setUniform4fMatrix("view",view);
         shader.setUniform4fMatrix("projection",projection);
@@ -119,7 +120,8 @@ class Transform {
         let rotateMatrixZ = this.rotateZ(this.rotation[2]);
         let translationMatrix = mat4.translate(mat4.create(),mat4.create(),vec3.fromValues(this.position[0], this.position[1], this.position[2]));
         let scalingMatrix = mat4.scale(mat4.create(),mat4.create(),vec3.fromValues(this.scale[0],this.scale[1],this.scale[2]));
-        let modelMatrix = mat4.mul(modelMatrix,translationMatrix,
+        let modelMatrix = mat4.create();
+        mat4.mul(modelMatrix,translationMatrix,
             mat4.mul(modelMatrix,rotateMatrixZ,
                 mat4.mul(modelMatrix,rotateMatrixY,
                     mat4.mul(modelMatrix,rotateMatrixX,scalingMatrix))));
@@ -127,13 +129,13 @@ class Transform {
     }
 
     rotateX(theta){
-        return mat4.fromRotation(mat4.create(), glMatrix.toRadian(theta), vec3.fromValues(1,0,0))
+        return mat4.fromRotation(mat4.create(), gl_Matrix.toRadian(theta), vec3.fromValues(1,0,0))
     }
     rotateY(theta){
-        return mat4.fromRotation(mat4.create(), glMatrix.toRadian(theta), vec3.fromValues(0,1,0))
+        return mat4.fromRotation(mat4.create(), gl_Matrix.toRadian(theta), vec3.fromValues(0,1,0))
     }
     rotateZ(theta){
-        return mat4.fromRotation(mat4.create(), glMatrix.toRadian(theta), vec3.fromValues(0,0,1))
+        return mat4.fromRotation(mat4.create(), gl_Matrix.toRadian(theta), vec3.fromValues(0,0,1))
     }
 }
 
