@@ -51,6 +51,7 @@ class ZoomInOut extends SceneObjectScript{
         this.getTransform().position = vec3.fromValues(this.getTransform().position[0],this.getTransform().position[1],displacement);
         this.factorOfDisplacement += 0.01;
     }
+
 }
 
 class RotateAxisY extends SceneObjectScript{
@@ -123,11 +124,9 @@ async function test(shaders) {
     shapeShader.setUniform3FVector("objectColor", [0.5, 0.5, 0.5]);
 
 
-    new ZoomInOut(sceneObjects[2],-200)
-    new RotateAxisY(sceneObjects[0])
-    new UpDown(sceneObjects[1])
-
-
+    BindSceneObject(sceneObjects[1], UpDown)
+    BindSceneObject(sceneObjects[0], RotateAxisY)
+    BindSceneObject(sceneObjects[2], ZoomInOut,[-200]);
 
     let scene = new Scene(sceneObjects,new Camera(vec3.fromValues(0,0,720)),canvas);
 

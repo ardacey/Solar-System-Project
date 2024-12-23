@@ -1,8 +1,41 @@
- class SceneObjectScript{
+
+
+
+
+
+
+
+class SceneObjectScript{
     sceneObject;
 
+    /**
+     * Add functionality to any scene object.
+     * The sequence of the different update/start events are random,
+     * initialization of a variable must be done on a higher level than its usage level.
+     *
+     * @param {SceneObject} sceneObject scene object to bind this behavior
+     *
+     * A simple example:
+     *
+     *     class RotateAxisY extends SceneObjectScript{
+     *     rotationStep;
+     *     Start() {
+     *         super.Start();
+     *         this.rotationStep = 1; //Init done in here
+     *     }
+     *
+     *     Update() {
+     *         super.Update();
+     *         let amount = this.rotationStep; //Usage was done in here
+     *         vec3.add(this.sceneObject.transform.rotation,this.sceneObject.transform.rotation, vec3.fromValues(0,amount,0));
+     *     }
+     *
+     *
+     * İf you want to use a variable in another script make sure the usage is done in one layer below
+     */
     constructor(sceneObject) {
         this.sceneObject = sceneObject;
+        sceneObject.SceneObjectScripts.push(this);
         addEventListener(this.sceneObject.getStartEventName(),(e)=>{
             this.Start()
         })
@@ -17,6 +50,34 @@
 
     getTransform(){
         return this.sceneObject.transform;
+    }
+}
+
+/**
+ * Bind pairs effectively
+ *
+ * @param {SceneObject} SceneObject scene object to bind this behavior
+ * @param {SceneClass} SceneClass behavior to bind
+ * @param {array} params dynamic parameters of SceneClass. It takes only enough params. If 1 is enough but
+ * 2 is suplied only the firs one accepted
+ *
+ * A simple example:
+ *         BindSceneObject(sceneObjects[2], ZoomInOut,[-200]);
+ *
+ */
+function BindSceneObject(SceneObject, SceneClass, params = undefined){
+    if(params){
+        new SceneClass(SceneObject,...params);
+    }
+    else{
+    new SceneClass(SceneObject);
+    }
+}
+
+//DO NOT USE, Not Complete
+function BindSceneObjectMultiple(SceneObjects, SceneClasses, params){
+    for(let i=0; i<SceneClasses.length;i++){
+        BindSceneObject(SceneObjects[i], SceneClasses[i], params[i]);
     }
 }
 
@@ -69,6 +130,7 @@ class Scene {
 
 class SceneObject {
     ID;
+    SceneObjectScripts;
     Mesh;
     transform;
     shader;
@@ -79,6 +141,7 @@ class SceneObject {
         this.ID = Math.floor(Math.random() * 2**8);
         this.Mesh = mesh;
         this.shader = shader;
+        this.SceneObjectScripts = [];
 
         this.transform = transform;
         this.startEvents = new Event(this.getStartEventName());
