@@ -20,7 +20,7 @@ class Camera{
 
     target;
     radius;
-    constructor(position = vec3.fromValues(0,0,0), up = vec3.fromValues(0,1,0), yaw = YAW, pitch = PITCH, target = vec3.fromValues(0, 0, 0), radius = -1000) {
+    constructor(position = vec3.fromValues(0,0,0), up = vec3.fromValues(0,1,0), yaw = YAW, pitch = PITCH, target = vec3.fromValues(0, 0, 0), radius = -30) {
         this.front = vec3.fromValues(0,0,-1);
         this.right = vec3.create();
         this.up = vec3.create();
@@ -54,12 +54,15 @@ class Camera{
     }
 
     getViewMatrix(){
-        return mat4.lookAt(mat4.create(),this.position,this.target,this.up);
+        let view = mat4.create();
+        mat4.lookAt(view,this.position,this.target,this.up);
+        return view;
     }
 
 
     processCameraMovement(deltaX, deltaY) {
-        let right = vec3.normalize(vec3.create(),vec3.cross(vec3.create(),this.front, this.up));
+        let right = vec3.create();
+        vec3.normalize(right,vec3.cross(right,this.front, this.up));
         let velocity = vec3.add(vec3.create(),
             vec3.multiplyScalar(vec3.create(),right,deltaX*this.movementSpeed),
             vec3.multiplyScalar(vec3.create(),vec3.normalize(this.up,this.up),deltaY*this.movementSpeed));

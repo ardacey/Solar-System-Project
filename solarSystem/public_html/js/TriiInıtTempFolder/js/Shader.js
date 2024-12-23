@@ -2,6 +2,7 @@
 
 //basic shader class to handling shader reading and compiling
 class Shader {
+    programInfo;
     program;
     gl;
     constructor(vertexCode, fragmentCode,gl) {
@@ -22,6 +23,7 @@ class Shader {
 
         gl.deleteShader(vertexShader);
         gl.deleteShader(fragmentShader);
+        this.programInfo = twgl.createProgramInfoFromProgram(gl,this.program);
     }
 
     useProgram(){
@@ -70,6 +72,10 @@ class Shader {
         let gl = this.gl;
         this.useProgram();
         gl.uniformMatrix4fv(gl.getUniformLocation(this.program,variableName),false, new Float32Array(values));
+    }
+
+    setUniforms(uniforms){
+        twgl.setUniforms(this.programInfo, uniforms);
     }
 
 }

@@ -1,4 +1,4 @@
-class SceneObjectScript{
+ class SceneObjectScript{
     sceneObject;
 
     constructor(sceneObject) {
@@ -25,7 +25,7 @@ class Scene {
     listOfSceneObjects;
     canvas;
 
-    constructor(listOfSceneObjects,camera,canvas) {
+    constructor(listOfSceneObjects,camera,canvas){
         this.listOfSceneObjects = listOfSceneObjects;
         this.camera = camera;
         this.canvas = canvas;
@@ -51,15 +51,17 @@ class Scene {
 
     getProjectionMatrix(){
         let projectionMatrix = mat4.perspective(mat4.create(),gl_Matrix.toRadian(this.camera.zoom),
-            this.canvas.width/this.canvas.height,30.0,10000.0);
+            this.canvas.width/this.canvas.height,0.5,10000.0);
         return projectionMatrix;
     }
 
     updateMatrices(model,view,projection,shader) {
-        console.log(model)
-        shader.setUniform4fMatrix("model",model);
-        shader.setUniform4fMatrix("view",view);
-        shader.setUniform4fMatrix("projection",projection);
+        let uniforms = {
+            model:model,
+            view:view,
+            projection:projection,
+        }
+        shader.setUniforms(uniforms);
     }
 
 
@@ -77,6 +79,7 @@ class SceneObject {
         this.ID = Math.floor(Math.random() * 2**8);
         this.Mesh = mesh;
         this.shader = shader;
+
         this.transform = transform;
         this.startEvents = new Event(this.getStartEventName());
         this.updateEvents = new Event(this.getUpdateEventName());
@@ -139,88 +142,42 @@ class Transform {
     }
 }
 
-function createAndBindVAO(gl){
-    let vao = gl.createVertexArray();
-    gl.bindVertexArray(vao);
-    return vao
-}
-
-function drawVAOwithElements(gl,shader, vao, drawType,elementCount, elementType, offset){
-    shader.useProgram();
-    gl.bindVertexArray(vao);
-    gl.drawElements(drawType,elementCount,elementType,offset);
-    gl.bindVertexArray(null);
-}
-
 class Mesh{
-    vertices;
-    indices;
+    meshOBJ;
     gl;
 
-    vao;vbo;ebo;
+    bufferInfo;
 
-    constructor(vertices, indices, gl){
-
-        this.vertices = vertices;
-        this.indices = indices;
+    constructor(meshOBJ, gl){
+        this.meshOBJ = meshOBJ;
         this.gl = gl;
-        this.setupMesh(this.gl);
     }
+
 
     draw(shader){
         let gl = this.gl;
-        drawVAOwithElements(gl,shader,this.vao,gl.TRIANGLES,this.indices.length,gl.UNSIGNED_INT,0);
+        shader.useProgram();
+        twgl.setBuffersAndAttributes(gl, shader.programInfo,this.bufferInfo);
+        twgl.drawBufferInfo(gl,this.bufferInfo);
     }
 
-    //for this to work we assume vertices are in layout 0,
-    //and normals in layout 1
     setupMesh(){
         let gl = this.gl;
-        this.vao = createAndBindVAO(gl);
-        this.vbo = gl.createBuffer();
-        this.ebo = gl.createBuffer();
 
-        let positions = Vertex.getFlattenMemberFromArray(this.vertices);
-        let normals = Vertex.getFlattenMemberFromArray(this.vertices,false);
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
-        gl.bufferData(gl.ARRAY_BUFFER,
-            4*(positions.length+normals.length),gl.STATIC_DRAW);
+        let positions = this.meshOBJ.vertices;
+        let normals = this.meshOBJ.vertexNormals;
+        let indices = this.meshOBJ.indices;
 
-        gl.bufferSubData(gl.ARRAY_BUFFER, 0, positions);
-        gl.bufferSubData(gl.ARRAY_BUFFER,positions.length*4,normals);
+        const arrays = {
+            aPos: { numComponents: 3, data: positions },
+            aNormal: { numComponents: 3, data: normals },
+            indices: { numComponents: 3, data: indices },
+        };
 
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.ebo);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,new Int32Array(this.indices),gl.STATIC_DRAW);
-
-        gl.enableVertexAttribArray(0);
-        gl.vertexAttribPointer(0,3,gl.FLOAT,false, 0, 0);
-
-        gl.enableVertexAttribArray(1);
-        gl.vertexAttribPointer(1,3,gl.FLOAT,false, 0, positions.length*4);
-
-    }
-}
-
-class Vertex{
-    position = vec3.fromValues(0,0,0);
-    normal = vec3.fromValues(0,0,0);
-
-    static getFlattenMemberFromArray(vertices, isPositions = true){
-        let returnArray = [];
-        for(let i = 0; i < vertices.length; i++){
-            let pushElement = isPositions === true ? vertices[i].position : vertices[i].normal;
-            returnArray.push(pushElement);
+        if(this.meshOBJ.textures.length > 0){
+            arrays.aTextCoord = this.meshOBJ.textures;
         }
-        return flatten(returnArray);
-    }
-}
 
-function flatten( v )
-{
-    var floats = new Float32Array( v.length*v[0].length  );
-
-    for(var i = 0; i<v.length; i++) for(var j=0; j<v[0].length; j++) {
-        floats[i*v[0].length+j] = v[i][j];
+        this.bufferInfo = twgl.createBufferInfoFromArrays(gl,arrays);
     }
-    return floats;
 }
