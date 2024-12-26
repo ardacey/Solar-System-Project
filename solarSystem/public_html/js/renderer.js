@@ -104,6 +104,7 @@ class Renderer {
                 const x = cosPhi * sinTheta;
                 const y = cosTheta;
                 const z = sinPhi * sinTheta;
+              
                 var u = 1 - (lon / longitudeBands);
                 var v = 1 - (lat / latitudeBands);
                 
