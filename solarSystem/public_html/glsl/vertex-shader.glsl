@@ -1,12 +1,21 @@
 #version 300 es
-in vec4 vPosition;
-in vec4 vColor; 
 
-out vec4 fColor;
+in vec3 aPosition;
+in vec3 aNormal;
+in vec2 uv; 
 
-void
-main()
-{
-    gl_Position = vPosition;
-    fColor = vColor; 
+uniform mat4 uModelViewMatrix;
+uniform mat4 uProjectionMatrix;
+uniform mat4 uNormalMatrix;
+
+out vec3 vNormal;
+out vec3 vPosition;
+out vec2 vUv;
+
+void main() {
+    vUv = uv; // Doku koordinatlarını aktarma
+    vNormal = normalize(mat3(uNormalMatrix) * aNormal);
+    vec4 position = uModelViewMatrix * vec4(aPosition, 1.0);
+    vPosition = position.xyz;
+    gl_Position = uProjectionMatrix * position;
 }

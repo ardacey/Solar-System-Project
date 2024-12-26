@@ -1,123 +1,263 @@
-"use strict";
-
+// WebGL değişkenleri
 let gl;
-window.mat4 = glMatrix.mat4
-window.mat2 = glMatrix.mat2
-window.mat2d= glMatrix.mat2d
-window.mat3= glMatrix.mat3
-window.mat4= glMatrix.mat4
-window.quat= glMatrix.quat
-window.quat2= glMatrix.quat2
-window.vec2= glMatrix.vec2
-window.vec3= glMatrix.vec3
-window.vec4= glMatrix.vec4
+let renderer;
+
+// glMatrix kütüphanesi kısayolları
+const mat4 = glMatrix.mat4;
+const vec3 = glMatrix.vec3;
+
+// Kamera matrisleri
+const viewMatrix = mat4.create();
+const projectionMatrix = mat4.create();
+
+// Güneş sistemi nesneleri
+const sun = new Star(
+    "Sun",
+    1.989e30,    // kütle (kg)
+    696340000,   // yarıçap (m)
+    5778,        // yüzey sıcaklığı (K)
+    0,           // açısal hız (rad/s)
+    25.38 * 24 * 3600, // kendi etrafında dönme süresi (saniye)
+    7.25,        // eksen eğikliği (derece)
+    0,           // eğiklik değişkeni (derece)
+    0,           // phi (derece)
+    { x: 0, y: 0, z: 0 }, // konum
+    3.828e26,    // aydınlatma gücü (W)
+);
+
+const earth = new Planet(
+    "Earth",
+    5.972e24,    // kütle (kg)
+    6371000,     // yarıçap (m)
+    288,         // yüzey sıcaklığı (K)
+    7.2921159e-5,// açısal hız (rad/s)
+    24 * 3600,   // kendi etrafında dönme süresi (saniye)
+    23.44,       // eksen eğikliği (derece)
+    0,           // eğiklik değişkeni (derece)
+    0,           // phi (derece)
+    { x: 149.6e8, y: 0, z: 0 }, // konum
+    365.256 * 24 * 3600,  // yörünge periyodu (saniye)
+    149.6e9,      // yörünge mesafesi (m)
+    0,            // açı (derece)
+);
+
+// Simülasyon zamanı (saniye)
+let simulationTime = 0;
+let timeMultiplier = 1;
+
+// Kamera pozisyonu ve hedefi
+const cameraPosition = vec3.fromValues(0, 50, 250);
+const cameraTarget = vec3.fromValues(0, 0, 0);
+const cameraUp = vec3.fromValues(0, 1, 0);
+let currentPlanet = sun;
+
+let isDragging = false;
+let lastMouseX = 0;
+let lastMouseY = 0;
+let phi = 0;
+let theta = 0;
 
 window.onload = async function init() {
+    // Canvas ve WebGL bağlamını al
     const canvas = document.querySelector("#glCanvas");
     gl = canvas.getContext("webgl2");
-
+    
     if (!gl) {
-        alert("Unable to initialize WebGL. Your browser or machine may not support it.");
+        alert("WebGL 2.0 desteklenmiyor!");
         return;
     }
 
-    gl.clearColor(1.0, 1.0, 1.0, 1.0);  // Beyaz arka plan
-    gl.clear(gl.COLOR_BUFFER_BIT);
+    // Canvas boyutunu ayarla
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    gl.viewport(0, 0, canvas.width, canvas.height);
 
-    // Shader'ları başlat
-    const program = await createProgram(gl, 'glsl/vertex-shader.glsl', 'glsl/fragment-shader.glsl');
-    gl.useProgram(program);
+    // Renderer'ı başlat
+    renderer = new Renderer(gl);
+    await renderer.initialize();
 
-    // Küre verilerini oluştur
-    const sphereData = createSphere(1.0, 50, 50);  // Yarıçap 1, 20x20 dilim
-    const buffers = setupBuffers(gl, sphereData);
+    // Projeksiyon matrisini ayarla
+    const fieldOfView = 45 * Math.PI / 180;
+    const aspect = canvas.width / canvas.height;
+    const zNear = 1;
+    const zFar = 1000;
+    mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
 
-    // Attribute'ları ve uniform'ları bağla
-    setupAttributesAndUniforms(gl, program, buffers);
+    // Kamera matrisini ayarla
+    mat4.lookAt(viewMatrix, cameraPosition, cameraTarget, cameraUp);
+    
+    sunTexture = renderer.loadTexture("8k_sun.jpg");
+    earthTexture = renderer.loadTexture("8k_sun.jpg");
 
-    // Çizim işlemi
-    drawScene(gl, program, buffers, sphereData.indices.length);
+    canvas.addEventListener("mousedown", onMouseDown);
+    canvas.addEventListener("mouseup", onMouseUp);
+    canvas.addEventListener("mousemove", onMouseMove);
+    canvas.addEventListener("wheel", onMouseWheel);
 
+    document.getElementById("centerSun").addEventListener("click", function() {
+        currentPlanet = sun;
+    });
+    
+    document.getElementById("centerEarth").addEventListener("click", function() {
+        currentPlanet = earth;
+    }); 
+    
+    const timeSlider = document.getElementById("timeSlider");
+    const timeSpeedLabel = document.getElementById("timeSpeedLabel");
+
+    timeSlider.addEventListener("input", function () {
+        timeMultiplier = parseFloat(timeSlider.value);
+        timeSpeedLabel.textContent = `${timeMultiplier.toFixed(1)}x`;
+    });
+
+    // Animasyon döngüsünü başlat
+    requestAnimationFrame(animate);
+};
+
+function onMouseDown(event) {
+    isDragging = true;
+    lastMouseX = event.clientX;
+    lastMouseY = event.clientY;
 }
 
+function onMouseUp(event) {
+    isDragging = false;
+}
 
-function createSphere(radius, latitudes, longitudes) {
-    const positions = [];
-    const colors = [];
-    const indices = [];
+function onMouseMove(event) {
+    if (!isDragging) return;
 
-    // Küreyi oluştur
-    for (let lat = 0; lat <= latitudes; lat++) {
-        const theta = lat * Math.PI / latitudes; // Yükseklik açısı
-        const sinTheta = Math.sin(theta);
-        const cosTheta = Math.cos(theta);
+    const deltaX = event.clientX - lastMouseX;
+    const deltaY = event.clientY - lastMouseY;
 
-        for (let lon = 0; lon <= longitudes; lon++) {
-            const phi = lon * 2 * Math.PI / longitudes; // Yatay açısı
-            const sinPhi = Math.sin(phi);
-            const cosPhi = Math.cos(phi);
+    phi += deltaX * 0.1;
+    theta -= deltaY * 0.1;
 
-            // Koordinatları hesapla
-            const x = radius * cosPhi * sinTheta;
-            const y = radius * cosTheta;
-            const z = radius * sinPhi * sinTheta;
+    lastMouseX = event.clientX;
+    lastMouseY = event.clientY;
+}
 
-            positions.push(x, y, z);
+function degreesToRadians(degrees) {
+    return degrees * Math.PI / 180;
+}
 
-            // Renkler (örnek olarak her vertex için rastgele renkler)
-            colors.push(Math.random(), Math.random(), Math.random(), 1.0);
-        }
+function onMouseWheel(event) {
+    const zoomFactor = -event.deltaY * 0.1;
+    const direction = vec3.create();
+
+    vec3.subtract(direction, cameraTarget, cameraPosition);
+    vec3.normalize(direction, direction);
+
+    vec3.scaleAndAdd(cameraPosition, cameraPosition, direction, zoomFactor);
+
+    const minDistance = 50;
+    const maxDistance = 500;
+    const currentDistance = vec3.distance(cameraPosition, cameraTarget);
+
+    if (currentDistance < minDistance) {
+        vec3.scaleAndAdd(cameraPosition, cameraTarget, direction, -minDistance);
+    } else if (currentDistance > maxDistance) {
+        vec3.scaleAndAdd(cameraPosition, cameraTarget, direction, maxDistance);
     }
-
-    // İndeksler
-    for (let lat = 0; lat < latitudes; lat++) {
-        for (let lon = 0; lon < longitudes; lon++) {
-            const first = (lat * (longitudes + 1)) + lon;
-            const second = first + longitudes + 1;
-
-            // İki üçgen oluştur
-            indices.push(first, second, first + 1);
-            indices.push(second, second + 1, first + 1);
-        }
-    }
-
-    return { positions, colors, indices };
 }
 
-function setupBuffers(gl, sphereData) {
-    const positionBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(sphereData.positions), gl.STATIC_DRAW);
+function centerCameraOn(body) {
+    cameraTarget[0] = body.position.x;
+    cameraTarget[1] = body.position.y;
+    cameraTarget[2] = body.position.z;
 
-    const colorBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(sphereData.colors), gl.STATIC_DRAW);
-
-    const indexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(sphereData.indices), gl.STATIC_DRAW);
-
-    return { positionBuffer, colorBuffer, indexBuffer };
+    mat4.lookAt(viewMatrix, cameraPosition, cameraTarget, cameraUp);
 }
 
-function setupAttributesAndUniforms(gl, program, buffers) {
-    // Vertex pozisyonlarını bağla
-    const positionLocation = gl.getAttribLocation(program, "vPosition");
-    gl.bindBuffer(gl.ARRAY_BUFFER, buffers.positionBuffer);
-    gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(positionLocation);
+// Her frame'de çağrılacak güncelleme fonksiyonu
+function update(deltaTime) {
+    deltaTime = deltaTime * timeMultiplier;
+    simulationTime += deltaTime;
 
-    // Renk verilerini bağla
-    const colorLocation = gl.getAttribLocation(program, "vColor");
-    gl.bindBuffer(gl.ARRAY_BUFFER, buffers.colorBuffer);
-    gl.vertexAttribPointer(colorLocation, 4, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(colorLocation);
+    centerCameraOn(currentPlanet);
+
+    const radius = vec3.length(cameraPosition);
+    cameraPosition[0] = radius * Math.cos(degreesToRadians(theta)) * Math.sin(degreesToRadians(phi));
+    cameraPosition[1] = radius * Math.sin(degreesToRadians(theta));
+    cameraPosition[2] = radius * Math.cos(degreesToRadians(theta)) * Math.cos(degreesToRadians(phi));
+
+    mat4.lookAt(viewMatrix, cameraPosition, cameraTarget, cameraUp);
+    
+    // Dünya'nın yörünge ve dönüş hareketlerini güncelle
+    earth.updateOrbitalPosition(deltaTime);
+    earth.updateRotation(deltaTime * timeMultiplier);
+    earth.updateSurfaceTemperature(sun);
+
+    // Güneş'in kendi ekseni etrafında dönüşünü güncelle
+    sun.updateRotation(deltaTime * timeMultiplier);
+
+    updateInfoBox(currentPlanet);
 }
 
-function drawScene(gl, program, buffers, numIndices) {
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+// Render fonksiyonu
+function render() {
+    renderer.clear();
+    
+    // Işık pozisyonunu güneşin merkezine ayarla
+    renderer.setLightPosition(0, 0, 0);
+    
+    // Güneşi çiz
+    renderer.setColor(1.0, 0.7, 0.0); // Sarı renk
+    renderer.setAmbient(0.8);
+    renderer.drawCelestialBody(sun, viewMatrix, projectionMatrix, sunTexture);
+    
+    // Dünyayı çiz
+    renderer.setColor(0.2, 0.5, 1.0); // Mavi renk
+    // renderer.setAmbient(0.1);
+    renderer.setAmbient(1);
+    renderer.drawCelestialBody(earth, viewMatrix, projectionMatrix, earthTexture);
+}
 
-    // Çizim işlemi
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indexBuffer);
-    gl.drawElements(gl.LINES, numIndices, gl.UNSIGNED_SHORT, 0);
+// Animasyon döngüsü
+let lastTime = 0;
+function animate(currentTime) {
+    const deltaTime = (currentTime - lastTime) / 1000; // saniyeye çevir
+    lastTime = currentTime;
+    
+    update(deltaTime);
+    render();
+    
+    requestAnimationFrame(animate);
+}
+
+function updateInfoBox(planet) {
+    const infoContent = document.getElementById("infoContent");
+
+    const name = planet.name;
+    const mass = planet.mass || 0;
+    const radius = planet.radius || 0;
+    const temperature = planet.surfaceTemperature || 0;
+    const velocity = planet.velocity || 0;
+    const rotationPeriod = planet.rotationPeriod || 0;
+    const obliquity = planet.obliquity || 0;
+    const argumentOfObliquity = planet.argumentOfObliquity || 0;
+    const yaw = planet.yaw || 0;
+    const position = planet.position || { x: 0, y: 0, z: 0 };
+    const orbitalPeriod = planet.orbitalPeriod || 0;
+    const orbitalDistance = planet.orbitalDistance || 0;
+    const angle = planet.angle || 0;
+    const luminosity = planet.luminosity || 0;
+
+    infoContent.innerHTML = `
+        <strong>Name:</strong> ${name} <br>
+        <strong>Mass:</strong> ${mass.toExponential(2)} kg <br>
+        <strong>Radius:</strong> ${radius.toFixed(2)} m <br>
+        <strong>Temperature:</strong> ${temperature.toFixed(2)} K <br>
+        <strong>Velocity:</strong> ${velocity.toFixed(2)} rad/s <br>
+        <strong>Rotation Period:</strong> ${rotationPeriod.toFixed(2)} s <br>
+        <strong>Obliquity:</strong> ${obliquity.toFixed(2)}° <br>
+        <strong>Argument of Obliquity:</strong> ${argumentOfObliquity.toFixed(2)}° <br>
+        <strong>Yaw:</strong> ${yaw.toFixed(2)}° <br>
+        <strong>Position:</strong> (${position.x.toFixed(2)}, ${position.y.toFixed(2)}, ${position.z.toFixed(2)}) <br>
+        <strong>Orbital Period:</strong> ${orbitalPeriod.toFixed(2)} s <br>
+        <strong>Orbital Distance:</strong> ${orbitalDistance.toExponential(2)} m <br>
+        <strong>Angle:</strong> ${angle.toFixed(2)}° <br>
+        <strong>Luminosity:</strong> ${luminosity.toExponential(2)} W <br>
+
+    `;
 }
