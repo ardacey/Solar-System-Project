@@ -27,13 +27,15 @@ class Renderer {
             normalMatrix: this.gl.getUniformLocation(this.program, 'uNormalMatrix'),
             lightPosition: this.gl.getUniformLocation(this.program, 'uLightPosition'),
             color: this.gl.getUniformLocation(this.program, 'uColor'),
-            ambient: this.gl.getUniformLocation(this.program, 'uAmbient')
+            ambient: this.gl.getUniformLocation(this.program, 'uAmbient'),
+            texture: this.gl.getUniformLocation(this.program, 'uTexture')
         };
 
         // Attribute lokasyonlarını al
         this.attributes = {
             position: this.gl.getAttribLocation(this.program, 'aPosition'),
-            normal: this.gl.getAttribLocation(this.program, 'aNormal')
+            normal: this.gl.getAttribLocation(this.program, 'aNormal'),
+            uv: this.gl.getAttribLocation(this.program, 'uv')
         };
 
         // GL ayarları
@@ -86,6 +88,7 @@ class Renderer {
         const positions = [];
         const normals = [];
         const indices = [];
+        const textureCoordData = [];
 
         // Vertex pozisyonlarını ve normallerini hesapla
         for (let lat = 0; lat <= latitudeBands; lat++) {
@@ -101,7 +104,13 @@ class Renderer {
                 const x = cosPhi * sinTheta;
                 const y = cosTheta;
                 const z = sinPhi * sinTheta;
-
+              
+                var u = 1 - (lon / longitudeBands);
+                var v = 1 - (lat / latitudeBands);
+                
+                textureCoordData.push(u);
+                textureCoordData.push(v);
+                
                 positions.push(radius * x, radius * y, radius * z);
                 normals.push(x, y, z);
             }
@@ -121,7 +130,8 @@ class Renderer {
         return {
             positions: new Float32Array(positions),
             normals: new Float32Array(normals),
-            indices: new Uint16Array(indices)
+            indices: new Uint16Array(indices),
+            textureCords: new Float32Array(textureCoordData)
         };
     }
 
@@ -137,11 +147,21 @@ class Renderer {
         const indexBuffer = this.gl.createBuffer();
         this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
         this.gl.bufferData(this.gl.ELEMENT_ARRAY_BUFFER, geometryData.indices, this.gl.STATIC_DRAW);
+        
+        // Texture koordinatlarını ekle
+        const uvBuffer = this.gl.createBuffer();
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, uvBuffer);
+        this.gl.bufferData(this.gl.ARRAY_BUFFER, geometryData.textureCords, this.gl.STATIC_DRAW);
 
-        return { position: positionBuffer, normal: normalBuffer, index: indexBuffer };
+        return { 
+            position: positionBuffer, 
+            normal: normalBuffer, 
+            index: indexBuffer,
+            uv: uvBuffer  // texture koordinatlarını da buffer'a ekle
+        };
     }
 
-    drawCelestialBody(celestialBody, viewMatrix, projectionMatrix) {
+    drawCelestialBody(celestialBody, viewMatrix, projectionMatrix, texture) {
         this.gl.useProgram(this.program);
 
         // Model matrisi oluştur
@@ -183,6 +203,11 @@ class Renderer {
         this.gl.uniformMatrix4fv(this.uniforms.projectionMatrix, false, projectionMatrix);
         this.gl.uniformMatrix4fv(this.uniforms.normalMatrix, false, normalMatrix);
         
+        // Texture uniform'ını ayarla
+        this.gl.activeTexture(this.gl.TEXTURE0);
+        this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
+        this.gl.uniform1i(this.uniforms.uTexture, 0);
+        
         // Vertex buffer'ları bağla
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.sphereBuffers.position);
         this.gl.vertexAttribPointer(this.attributes.position, 3, this.gl.FLOAT, false, 0, 0);
@@ -191,6 +216,11 @@ class Renderer {
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.sphereBuffers.normal);
         this.gl.vertexAttribPointer(this.attributes.normal, 3, this.gl.FLOAT, false, 0, 0);
         this.gl.enableVertexAttribArray(this.attributes.normal);
+        
+        // Texture koordinatlarını bağla
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.sphereBuffers.uv);
+        this.gl.vertexAttribPointer(this.attributes.uv, 2, this.gl.FLOAT, false, 0, 0);
+        this.gl.enableVertexAttribArray(this.attributes.uv);
 
         // İndeks buffer'ını bağla
         this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.sphereBuffers.index);
@@ -217,5 +247,25 @@ class Renderer {
     setAmbient(value) {
         this.gl.useProgram(this.program);
         this.gl.uniform1f(this.uniforms.ambient, value);
+    }
+    
+    loadTexture(url) {
+        const texture = this.gl.createTexture();
+        this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
+
+        // Texture'u henüz yüklemeden önce, tek renkli bir yapı gösterelim.
+        this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGB, 1, 1, 0, this.gl.RGB, this.gl.UNSIGNED_BYTE, new Uint8Array([255, 255, 255]));
+
+        const image = new Image();
+        image.onload = () => {
+            // Texture yüklendikten sonra, gerçek texture verisini yükleyelim.
+            this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
+            this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGB, this.gl.RGB, this.gl.UNSIGNED_BYTE, image);
+
+            // Mipmap kullanmak
+            this.gl.generateMipmap(this.gl.TEXTURE_2D);
+        };
+        image.src = url;
+        return texture;
     }
 }

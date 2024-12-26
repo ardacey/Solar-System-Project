@@ -219,6 +219,161 @@ function animate(currentTime) {
     requestAnimationFrame(animate);
 }
 
+=======
+
+    // Renderer'ı başlat
+    renderer = new Renderer(gl);
+    await renderer.initialize();
+
+    // Projeksiyon matrisini ayarla
+    const fieldOfView = 45 * Math.PI / 180;
+    const aspect = canvas.width / canvas.height;
+    const zNear = 1;
+    const zFar = 1000;
+    mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
+
+    // Kamera matrisini ayarla
+    mat4.lookAt(viewMatrix, cameraPosition, cameraTarget, cameraUp);
+    
+    sunTexture = renderer.loadTexture("8k_sun.jpg");
+    earthTexture = renderer.loadTexture("8k_sun.jpg");
+
+    canvas.addEventListener("mousedown", onMouseDown);
+    canvas.addEventListener("mouseup", onMouseUp);
+    canvas.addEventListener("mousemove", onMouseMove);
+    canvas.addEventListener("wheel", onMouseWheel);
+
+    document.getElementById("centerSun").addEventListener("click", function() {
+        currentPlanet = sun;
+    });
+    
+    document.getElementById("centerEarth").addEventListener("click", function() {
+        currentPlanet = earth;
+    }); 
+    
+    const timeSlider = document.getElementById("timeSlider");
+    const timeSpeedLabel = document.getElementById("timeSpeedLabel");
+
+    timeSlider.addEventListener("input", function () {
+        timeMultiplier = parseFloat(timeSlider.value);
+        timeSpeedLabel.textContent = `${timeMultiplier.toFixed(1)}x`;
+    });
+
+    // Animasyon döngüsünü başlat
+    requestAnimationFrame(animate);
+};
+
+function onMouseDown(event) {
+    isDragging = true;
+    lastMouseX = event.clientX;
+    lastMouseY = event.clientY;
+}
+
+function onMouseUp(event) {
+    isDragging = false;
+}
+
+function onMouseMove(event) {
+    if (!isDragging) return;
+
+    const deltaX = event.clientX - lastMouseX;
+    const deltaY = event.clientY - lastMouseY;
+
+    phi += deltaX * 0.1;
+    theta -= deltaY * 0.1;
+
+    lastMouseX = event.clientX;
+    lastMouseY = event.clientY;
+}
+
+function degreesToRadians(degrees) {
+    return degrees * Math.PI / 180;
+}
+
+function onMouseWheel(event) {
+    const zoomFactor = -event.deltaY * 0.1;
+    const direction = vec3.create();
+
+    vec3.subtract(direction, cameraTarget, cameraPosition);
+    vec3.normalize(direction, direction);
+
+    vec3.scaleAndAdd(cameraPosition, cameraPosition, direction, zoomFactor);
+
+    const minDistance = 50;
+    const maxDistance = 500;
+    const currentDistance = vec3.distance(cameraPosition, cameraTarget);
+
+    if (currentDistance < minDistance) {
+        vec3.scaleAndAdd(cameraPosition, cameraTarget, direction, -minDistance);
+    } else if (currentDistance > maxDistance) {
+        vec3.scaleAndAdd(cameraPosition, cameraTarget, direction, maxDistance);
+    }
+}
+
+function centerCameraOn(body) {
+    cameraTarget[0] = body.position.x;
+    cameraTarget[1] = body.position.y;
+    cameraTarget[2] = body.position.z;
+
+    mat4.lookAt(viewMatrix, cameraPosition, cameraTarget, cameraUp);
+}
+
+// Her frame'de çağrılacak güncelleme fonksiyonu
+function update(deltaTime) {
+    deltaTime = deltaTime * timeMultiplier;
+    simulationTime += deltaTime;
+
+    centerCameraOn(currentPlanet);
+
+    const radius = vec3.length(cameraPosition);
+    cameraPosition[0] = radius * Math.cos(degreesToRadians(theta)) * Math.sin(degreesToRadians(phi));
+    cameraPosition[1] = radius * Math.sin(degreesToRadians(theta));
+    cameraPosition[2] = radius * Math.cos(degreesToRadians(theta)) * Math.cos(degreesToRadians(phi));
+
+    mat4.lookAt(viewMatrix, cameraPosition, cameraTarget, cameraUp);
+    
+    // Dünya'nın yörünge ve dönüş hareketlerini güncelle
+    earth.updateOrbitalPosition(deltaTime);
+    earth.updateRotation(deltaTime * timeMultiplier);
+    earth.updateSurfaceTemperature(sun);
+
+    // Güneş'in kendi ekseni etrafında dönüşünü güncelle
+    sun.updateRotation(deltaTime * timeMultiplier);
+
+    updateInfoBox(currentPlanet);
+}
+
+// Render fonksiyonu
+function render() {
+    renderer.clear();
+    
+    // Işık pozisyonunu güneşin merkezine ayarla
+    renderer.setLightPosition(0, 0, 0);
+    
+    // Güneşi çiz
+    renderer.setColor(1.0, 0.7, 0.0); // Sarı renk
+    renderer.setAmbient(0.8);
+    renderer.drawCelestialBody(sun, viewMatrix, projectionMatrix, sunTexture);
+    
+    // Dünyayı çiz
+    renderer.setColor(0.2, 0.5, 1.0); // Mavi renk
+    // renderer.setAmbient(0.1);
+    renderer.setAmbient(1);
+    renderer.drawCelestialBody(earth, viewMatrix, projectionMatrix, earthTexture);
+}
+
+// Animasyon döngüsü
+let lastTime = 0;
+function animate(currentTime) {
+    const deltaTime = (currentTime - lastTime) / 1000; // saniyeye çevir
+    lastTime = currentTime;
+    
+    update(deltaTime);
+    render();
+    
+    requestAnimationFrame(animate);
+}
+
 function updateInfoBox(planet) {
     const infoContent = document.getElementById("infoContent");
 
