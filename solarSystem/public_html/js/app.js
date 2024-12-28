@@ -86,8 +86,8 @@ window.onload = async function init() {
     // Kamera matrisini ayarla
     mat4.lookAt(viewMatrix, cameraPosition, cameraTarget, cameraUp);
     
-    sunTexture = renderer.loadTexture("8k_sun.jpg");
-    earthTexture = renderer.loadTexture("8k_sun.jpg");
+    sunTexture = renderer.loadTexture("textures/2k_sun.jpg");
+    earthTexture = renderer.loadTexture("textures/2k_earth_daymap.jpg");
 
     canvas.addEventListener("mousedown", onMouseDown);
     canvas.addEventListener("mouseup", onMouseUp);
@@ -202,14 +202,13 @@ function render() {
     renderer.setLightPosition(0, 0, 0);
     
     // Güneşi çiz
-    renderer.setColor(1.0, 0.7, 0.0); // Sarı renk
-    renderer.setAmbient(0.8);
+    renderer.setColor(1.0, 1.0, 1.0); // Sarı renk
+    renderer.setAmbient(1.0);
     renderer.drawCelestialBody(sun, viewMatrix, projectionMatrix, sunTexture);
     
     // Dünyayı çiz
-    renderer.setColor(0.2, 0.5, 1.0); // Mavi renk
-    // renderer.setAmbient(0.1);
-    renderer.setAmbient(1);
+    renderer.setColor(1.0, 1.0, 1.0); // White color to show true texture colors
+    renderer.setAmbient(0.4); // Reduced ambient to show better shading
     renderer.drawCelestialBody(earth, viewMatrix, projectionMatrix, earthTexture);
 }
 

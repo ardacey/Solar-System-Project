@@ -87,51 +87,71 @@ class Renderer {
     createSphereGeometry(radius, latitudeBands, longitudeBands) {
         const positions = [];
         const normals = [];
-        const indices = [];
         const textureCoordData = [];
+        const indices = [];
 
-        // Vertex pozisyonlarını ve normallerini hesapla
-        for (let lat = 0; lat <= latitudeBands; lat++) {
-            const theta = lat * Math.PI / latitudeBands;
+        // Generate vertices
+        for (let latNumber = 0; latNumber <= latitudeBands; latNumber++) {
+            // Calculate the current latitude angle
+            const theta = latNumber * Math.PI / latitudeBands;
             const sinTheta = Math.sin(theta);
             const cosTheta = Math.cos(theta);
 
-            for (let lon = 0; lon <= longitudeBands; lon++) {
-                const phi = lon * 2 * Math.PI / longitudeBands;
+            for (let longNumber = 0; longNumber <= longitudeBands; longNumber++) {
+                // Calculate the current longitude angle
+                const phi = longNumber * 2 * Math.PI / longitudeBands;
                 const sinPhi = Math.sin(phi);
                 const cosPhi = Math.cos(phi);
 
+                // Calculate the vertex position
                 const x = cosPhi * sinTheta;
                 const y = cosTheta;
                 const z = sinPhi * sinTheta;
-              
-                var u = 1 - (lon / longitudeBands);
-                var v = 1 - (lat / latitudeBands);
-                
+
+                // Calculate texture coordinates
+                // UV mapping for a sphere using spherical coordinates
+                const u = 1 - (longNumber / longitudeBands); // Longitude mapped to U (0 to 1)
+                const v = latNumber / latitudeBands;         // Latitude mapped to V (0 to 1)
+
+                // Add vertex data
+                positions.push(radius * x);
+                positions.push(radius * y);
+                positions.push(radius * z);
+
+                // Add normal data (normalized vertex position)
+                normals.push(x);
+                normals.push(y);
+                normals.push(z);
+
+                // Add texture coordinates
                 textureCoordData.push(u);
                 textureCoordData.push(v);
-                
-                positions.push(radius * x, radius * y, radius * z);
-                normals.push(x, y, z);
             }
         }
 
-        // İndeksleri oluştur
-        for (let lat = 0; lat < latitudeBands; lat++) {
-            for (let lon = 0; lon < longitudeBands; lon++) {
-                const first = (lat * (longitudeBands + 1)) + lon;
+        // Generate indices
+        for (let latNumber = 0; latNumber < latitudeBands; latNumber++) {
+            for (let longNumber = 0; longNumber < longitudeBands; longNumber++) {
+                const first = latNumber * (longitudeBands + 1) + longNumber;
                 const second = first + longitudeBands + 1;
 
-                indices.push(first, second, first + 1);
-                indices.push(second, second + 1, first + 1);
+                // First triangle
+                indices.push(first);
+                indices.push(first + 1);
+                indices.push(second);
+
+                // Second triangle
+                indices.push(second);
+                indices.push(first + 1);
+                indices.push(second + 1);
             }
         }
 
         return {
             positions: new Float32Array(positions),
             normals: new Float32Array(normals),
-            indices: new Uint16Array(indices),
-            textureCords: new Float32Array(textureCoordData)
+            textureCoords: new Float32Array(textureCoordData),
+            indices: new Uint16Array(indices)
         };
     }
 
@@ -151,7 +171,7 @@ class Renderer {
         // Texture koordinatlarını ekle
         const uvBuffer = this.gl.createBuffer();
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, uvBuffer);
-        this.gl.bufferData(this.gl.ARRAY_BUFFER, geometryData.textureCords, this.gl.STATIC_DRAW);
+        this.gl.bufferData(this.gl.ARRAY_BUFFER, geometryData.textureCoords, this.gl.STATIC_DRAW);
 
         return { 
             position: positionBuffer, 
@@ -250,22 +270,80 @@ class Renderer {
     }
     
     loadTexture(url) {
-        const texture = this.gl.createTexture();
-        this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
+        const gl = this.gl;
+        const texture = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, texture);
 
-        // Texture'u henüz yüklemeden önce, tek renkli bir yapı gösterelim.
-        this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGB, 1, 1, 0, this.gl.RGB, this.gl.UNSIGNED_BYTE, new Uint8Array([255, 255, 255]));
+        // Default white texture while loading
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, 
+            new Uint8Array([255, 255, 255, 255]));
 
         const image = new Image();
         image.onload = () => {
-            // Texture yüklendikten sonra, gerçek texture verisini yükleyelim.
-            this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
-            this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGB, this.gl.RGB, this.gl.UNSIGNED_BYTE, image);
+            // Get max texture size supported by GPU
+            const maxSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+            
+            // Create a canvas to potentially resize the image
+            const canvas = document.createElement('canvas');
+            let width = image.width;
+            let height = image.height;
+            
+            // Scale down if image is too large
+            if (width > maxSize || height > maxSize) {
+                const scale = maxSize / Math.max(width, height);
+                width = Math.floor(width * scale);
+                height = Math.floor(height * scale);
+            }
+            
+            // Ensure dimensions are power of 2
+            const finalWidth = nextPowerOf2(width);
+            const finalHeight = nextPowerOf2(height);
+            
+            canvas.width = finalWidth;
+            canvas.height = finalHeight;
+            
+            // Draw and potentially resize the image
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(image, 0, 0, finalWidth, finalHeight);
 
-            // Mipmap kullanmak
-            this.gl.generateMipmap(this.gl.TEXTURE_2D);
+            // Bind and set texture parameters
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+            
+            // Use REPEAT wrapping for proper sphere mapping
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
+            // Load the resized texture
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
+            gl.generateMipmap(gl.TEXTURE_2D);
+            
+            // Optional: log texture information
+            console.log(`Loaded texture ${url}: ${finalWidth}x${finalHeight}`);
         };
+        
+        image.onerror = () => {
+            console.error(`Failed to load texture: ${url}`);
+        };
+        
         image.src = url;
         return texture;
     }
+
+    deleteTexture(texture) {
+        if (texture) {
+            this.gl.deleteTexture(texture);
+        }
+    }
+}
+
+// Utility function to get next power of 2
+function nextPowerOf2(value) {
+    return Math.pow(2, Math.ceil(Math.log2(value)));
+}
+
+// Utility function to check if a number is a power of 2
+function isPowerOf2(value) {
+    return (value & (value - 1)) === 0;
 }
