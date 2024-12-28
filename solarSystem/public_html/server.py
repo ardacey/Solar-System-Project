@@ -12,7 +12,7 @@ class CORSRequestHandler(SimpleHTTPRequestHandler):
         self.send_response(200)
         self.end_headers()
 
-port = 8000
+port = 8080
 print(f"Starting server on port {port}")
 httpd = HTTPServer(('localhost', port), CORSRequestHandler)
 print(f"Open http://localhost:{port} in your web browser")
