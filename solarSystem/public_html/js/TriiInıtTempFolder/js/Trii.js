@@ -1,7 +1,26 @@
 
 
+class Time{
+    perfectFrameTime = 1000 / 60;
+    deltaTime = 0;
+    lastTimestamp = 0;
+    timeStamp = 0;
 
+    UpdateTime(TimeStamp){
+        this.lastTimestamp = TimeStamp;
+    }
 
+    DeltaTime(){
+        let timestamp = this.timeStamp;
+
+        this.deltaTime = (timestamp - this.lastTimestamp) / this.perfectFrameTime;
+        this.lastTimestamp = timestamp;
+
+        return this.deltaTime;
+    }
+}
+
+const time = new Time();
 
 
 
@@ -151,6 +170,7 @@ class SceneObject {
             this.Mesh.setupMesh();
         })
         addEventListener(this.getUpdateEventName(), (e)=>{
+
             this.Mesh.draw(this.shader);
         });
     }

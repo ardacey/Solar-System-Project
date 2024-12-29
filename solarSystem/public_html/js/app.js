@@ -2,9 +2,6 @@
 let gl;
 let renderer;
 
-// glMatrix kütüphanesi kısayolları
-const mat4 = glMatrix.mat4;
-const vec3 = glMatrix.vec3;
 
 // Kamera matrisleri
 const viewMatrix = mat4.create();

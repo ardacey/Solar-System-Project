@@ -212,7 +212,8 @@ async function test(shaders) {
 
         clearGlBuffer(gl);
 
-        scene.Update()
+        scene.Update();
+
 
         requestAnimationFrame(render);
     }
