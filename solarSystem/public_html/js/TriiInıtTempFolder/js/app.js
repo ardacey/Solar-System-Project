@@ -105,6 +105,13 @@ async function test(shaders) {
     const shapeShader = shaders[0];
 
     async function setupSceneObjects(numOfMeshes) {
+        OBJ.downloadModels([{
+            obj:"testModel/ImageToStl.com_sun-with-2k-textures/ImageToStl.com_sun-with-2k-textures.obj",
+            mtl:"testModel/ImageToStl.com_sun-with-2k-textures/sun-with-2k-textures.mtl",
+            downloadMtlTextures: true,
+            name:"sunMesh"
+        }]).then((data) => console.log("success:", data))
+            .catch((e) => console.error("Failure:", e));
 
         let returnList = []
         for (let i = 0; i < numOfMeshes; i++) {

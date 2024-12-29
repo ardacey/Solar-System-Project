@@ -19,7 +19,6 @@ async function initShader(vertexShaderPath, fragmentShaderPath, gl) {
 
 
 function loadMeshData(objString, gl) {
-    OBJ.initMeshBuffers
     let obj = new OBJ.Mesh(objString);
     console.log(obj);
     return new Mesh(obj,gl);
