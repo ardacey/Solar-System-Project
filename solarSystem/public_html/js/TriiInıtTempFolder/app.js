@@ -110,8 +110,8 @@ async function test(shaders) {
     async function setupSceneObjects(numOfMeshes) {
         let dataArr =[];
         await OBJ.downloadModels([{
-            obj:"testModel/ImageToStl.com_sun-with-2k-textures/ImageToStl.com_sun-with-2k-textures.obj",
-            mtl:"testModel/ImageToStl.com_sun-with-2k-textures/sun-with-2k-textures.mtl",
+            obj:"testModel/SunModel/SunModel.obj",
+            mtl:"testModel/SunModel/sun-with-2k-textures.mtl",
             downloadMtlTextures: true,
             name:"sunMesh"
         },{
