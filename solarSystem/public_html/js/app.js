@@ -1,10 +1,10 @@
 // WebGL değişkenleri
 let gl;
 let renderer;
+let sunTexture;
+let earthTexture;
+let skyboxTexture;
 
-// glMatrix kütüphanesi kısayolları
-const mat4 = glMatrix.mat4;
-const vec3 = glMatrix.vec3;
 
 // Kamera matrisleri
 const viewMatrix = mat4.create();
@@ -86,8 +86,10 @@ window.onload = async function init() {
     // Kamera matrisini ayarla
     mat4.lookAt(viewMatrix, cameraPosition, cameraTarget, cameraUp);
     
-    sunTexture = renderer.loadTexture("8k_sun.jpg");
-    earthTexture = renderer.loadTexture("8k_sun.jpg");
+    // Texture'ları yükle
+    sunTexture = renderer.loadTexture("textures/8k/8k_sun.jpg");
+    earthTexture = renderer.loadTexture("textures/8k/8k_earth_daymap.jpg");
+    skyboxTexture = renderer.loadTexture("textures/8k/8k_stars_milky_way.jpg");
 
     canvas.addEventListener("mousedown", onMouseDown);
     canvas.addEventListener("mouseup", onMouseUp);
@@ -198,18 +200,20 @@ function update(deltaTime) {
 function render() {
     renderer.clear();
     
+    // Önce skybox'ı çiz
+    renderer.drawSkybox(viewMatrix, projectionMatrix, skyboxTexture);
+    
     // Işık pozisyonunu güneşin merkezine ayarla
     renderer.setLightPosition(0, 0, 0);
     
     // Güneşi çiz
-    renderer.setColor(1.0, 0.7, 0.0); // Sarı renk
-    renderer.setAmbient(0.8);
+    renderer.setColor(1.0, 1.0, 1.0);
+    renderer.setAmbient(1.0);
     renderer.drawCelestialBody(sun, viewMatrix, projectionMatrix, sunTexture);
     
     // Dünyayı çiz
-    renderer.setColor(0.2, 0.5, 1.0); // Mavi renk
-    // renderer.setAmbient(0.1);
-    renderer.setAmbient(1);
+    renderer.setColor(1.0, 1.0, 1.0);
+    renderer.setAmbient(0.4);
     renderer.drawCelestialBody(earth, viewMatrix, projectionMatrix, earthTexture);
 }
 
