@@ -102,20 +102,29 @@ async function test(shaders) {
         return;
     }
 
+    gl.enable(gl.CULL_FACE)
+
+
     const shapeShader = shaders[0];
 
     async function setupSceneObjects(numOfMeshes) {
-        OBJ.downloadModels([{
+        let dataArr =[];
+        await OBJ.downloadModels([{
             obj:"testModel/ImageToStl.com_sun-with-2k-textures/ImageToStl.com_sun-with-2k-textures.obj",
             mtl:"testModel/ImageToStl.com_sun-with-2k-textures/sun-with-2k-textures.mtl",
             downloadMtlTextures: true,
             name:"sunMesh"
-        }]).then((data) => console.log("success:", data))
+        },{
+            obj:"testModel/resources/bitki.obj",
+            mtl:true,
+            downloadMtlTextures: true,
+            name:"bitkiMesh"
+        }
+        ]).then((data) => dataArr.push(data))
             .catch((e) => console.error("Failure:", e));
-
         let returnList = []
         for (let i = 0; i < numOfMeshes; i++) {
-            let mesh = await ReadFile("monkey_head.obj").then(text => loadMeshData(text,gl));
+            let mesh = new Mesh(dataArr[0]["sunMesh"],gl);
             let sceneObject = new SceneObject(mesh,shapeShader);
             returnList.push(sceneObject);
         }
@@ -123,7 +132,7 @@ async function test(shaders) {
     }
 
 
-    let sceneObjects = await setupSceneObjects(3);
+    let sceneObjects = await setupSceneObjects(1);
 
 
     shapeShader.setUniform3FVector("lightPos", [100, -100, 100]);
@@ -131,11 +140,10 @@ async function test(shaders) {
     shapeShader.setUniform3FVector("objectColor", [0.5, 0.5, 0.5]);
 
 
-    BindSceneObject(sceneObjects[1], UpDown)
     BindSceneObject(sceneObjects[0], RotateAxisY)
-    BindSceneObject(sceneObjects[2], ZoomInOut,[-200]);
 
     let scene = new Scene(sceneObjects,new Camera(vec3.fromValues(0,0,720)),canvas);
+
 
     eventHandlers();
     function eventHandlers() {
