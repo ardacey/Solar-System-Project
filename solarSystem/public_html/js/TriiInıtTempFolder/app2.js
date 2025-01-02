@@ -110,15 +110,10 @@ async function test(shaders) {
     async function setupSceneObjects(numOfMeshes) {
         let dataArr =[];
         await OBJ.downloadModels([{
-            obj:"testModel/SunModel/SunModel.obj",
-            mtl:"testModel/SunModel/sun-with-2k-textures.mtl",
+            obj:"/public_html/Models/SunModel/SunModel.obj",
+            mtl:"/public_html/Models/SunModel/SunModel.mtl",
             downloadMtlTextures: true,
             name:"sunMesh"
-        },{
-            obj:"testModel/resources/bitki.obj",
-            mtl:true,
-            downloadMtlTextures: true,
-            name:"bitkiMesh"
         }
         ]).then((data) => dataArr.push(data))
             .catch((e) => console.error("Failure:", e));
@@ -137,7 +132,6 @@ async function test(shaders) {
 
     shapeShader.setUniform3FVector("lightPos", [100, -100, 100]);
     shapeShader.setUniform3FVector("lightColor", [1, 1, 1]);
-    shapeShader.setUniform3FVector("objectColor", [0.5, 0.5, 0.5]);
 
 
     BindSceneObject(sceneObjects[0], RotateAxisY)

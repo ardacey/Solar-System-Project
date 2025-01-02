@@ -75,6 +75,7 @@ class Shader {
     }
 
     setUniforms(uniforms){
+        this.useProgram();
         twgl.setUniforms(this.programInfo, uniforms);
     }
 
