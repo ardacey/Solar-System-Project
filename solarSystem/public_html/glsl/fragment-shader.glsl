@@ -3,7 +3,7 @@ precision mediump float;
 
 in vec3 vNormal;
 in vec3 vPosition;
-in vec2 vUv; 
+in vec2 vUv;
 
 uniform vec3 uLightPosition;
 uniform vec3 uColor;
