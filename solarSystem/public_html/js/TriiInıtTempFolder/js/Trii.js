@@ -1,7 +1,26 @@
 
 
+class Time{
+    perfectFrameTime = 1000 / 60;
+    deltaTime = 0;
+    lastTimestamp = 0;
+    timeStamp = 0;
 
+    UpdateTime(TimeStamp){
+        this.lastTimestamp = TimeStamp;
+    }
 
+    DeltaTime(){
+        let timestamp = this.timeStamp;
+
+        this.deltaTime = (timestamp - this.lastTimestamp) / this.perfectFrameTime;
+        this.lastTimestamp = timestamp;
+
+        return this.deltaTime;
+    }
+}
+
+const time = new Time();
 
 
 
@@ -121,6 +140,7 @@ class Scene {
             model:model,
             view:view,
             projection:projection,
+            viewPos: this.camera.position
         }
         shader.setUniforms(uniforms);
     }
@@ -151,6 +171,7 @@ class SceneObject {
             this.Mesh.setupMesh();
         })
         addEventListener(this.getUpdateEventName(), (e)=>{
+
             this.Mesh.draw(this.shader);
         });
     }
@@ -205,6 +226,44 @@ class Transform {
     }
 }
 
+class MaterialHandler {
+    setupMaterialUniforms(material, shader, gl) {
+        // Convert HTML image to texture
+        if (material.mapDiffuse?.texture?.nodeName === 'IMG') {
+            material.mapDiffuse.texture = this.imageToTexture(material.mapDiffuse.texture, gl);
+        }
+
+        const uniforms = {
+            'material.diffuse': material.mapDiffuse?.texture || this.createDefaultTexture(gl),
+            'material.diffuseColor': material.diffuse || [1, 1, 1],
+            'material.shininess': material.specularExponent || 32.0
+        };
+
+        shader.setUniforms(uniforms);
+    }
+
+    imageToTexture(img, gl) {
+        return twgl.createTexture(gl, {
+            src: img,
+            min: gl.LINEAR,
+            mag: gl.LINEAR,
+            wrap: gl.CLAMP_TO_EDGE
+        });
+    }
+
+
+    createDefaultTexture(gl) {
+        const pixels = new Uint8Array([255, 255, 255, 255]);
+        return twgl.createTexture(gl, {
+            min: gl.NEAREST,
+            mag: gl.NEAREST,
+            width: 1,
+            height: 1,
+            data: pixels
+        });
+    }
+}
+
 class Mesh{
     meshOBJ;
     gl;
@@ -214,14 +273,33 @@ class Mesh{
     constructor(meshOBJ, gl){
         this.meshOBJ = meshOBJ;
         this.gl = gl;
+        this.materialHandler = new MaterialHandler();
     }
 
 
-    draw(shader){
-        let gl = this.gl;
+    draw(shader) {
+        const gl = this.gl
+
+
         shader.useProgram();
-        twgl.setBuffersAndAttributes(gl, shader.programInfo,this.bufferInfo);
-        twgl.drawBufferInfo(gl,this.bufferInfo);
+        twgl.setBuffersAndAttributes(gl, shader.programInfo, this.bufferInfo);
+
+        if (this.meshOBJ.materialsByIndex) {
+            for (const [index, material] of Object.entries(this.meshOBJ.materialsByIndex)) {
+                this.materialHandler.setupMaterialUniforms(material, shader, this.gl);
+                const indices = this.meshOBJ.indicesPerMaterial[index];
+                if (indices && indices.length > 0) {
+                    // Create new bufferInfo for this subset
+                    const subsetBufferInfo = twgl.createBufferInfoFromArrays(this.gl, {
+                        ...this.bufferInfo.attribs,
+                        indices: { numComponents: 3, data: indices }
+                    });
+                    twgl.drawBufferInfo(this.gl, subsetBufferInfo);
+                }
+            }
+        } else {
+            twgl.drawBufferInfo(this.gl, this.bufferInfo);
+        }
     }
 
     setupMesh(){
