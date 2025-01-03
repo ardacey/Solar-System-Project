@@ -4,19 +4,11 @@ class Time{
     perfectFrameTime = 1000 / 60;
     deltaTime = 0;
     lastTimestamp = 0;
-    timeStamp = 0;
 
-    UpdateTime(TimeStamp){
-        this.lastTimestamp = TimeStamp;
-    }
-
-    DeltaTime(){
-        let timestamp = this.timeStamp;
-
+    UpdateTime(timestamp){
         this.deltaTime = (timestamp - this.lastTimestamp) / this.perfectFrameTime;
         this.lastTimestamp = timestamp;
 
-        return this.deltaTime;
     }
 }
 
@@ -86,10 +78,11 @@ class SceneObjectScript{
  */
 function BindSceneObject(SceneObject, SceneClass, params = undefined){
     if(params){
-        new SceneClass(SceneObject,...params);
+        return new SceneClass(SceneObject,...params);
+
     }
     else{
-    new SceneClass(SceneObject);
+    return new SceneClass(SceneObject);
     }
 }
 
@@ -107,6 +100,9 @@ class Scene {
 
     constructor(listOfSceneObjects,camera,canvas){
         this.listOfSceneObjects = listOfSceneObjects;
+        for (let i = 0; i < listOfSceneObjects.length; i++) {
+            listOfSceneObjects[i].scene = this;
+        }
         this.camera = camera;
         this.canvas = canvas;
     }
@@ -142,7 +138,7 @@ class Scene {
             projection:projection,
             viewPos: this.camera.position
         }
-        shader.setUniforms(uniforms);
+        shader?.setUniforms(uniforms);
     }
 
 
@@ -156,6 +152,7 @@ class SceneObject {
     shader;
     startEvents;
     updateEvents;
+    scene;
 
     constructor(mesh, shader, transform = new Transform()) {
         this.ID = Math.floor(Math.random() * 2**8);
@@ -168,11 +165,10 @@ class SceneObject {
         this.updateEvents = new Event(this.getUpdateEventName());
 
         addEventListener(this.getStartEventName(),(e)=>{
-            this.Mesh.setupMesh();
+            this.Mesh?.setupMesh();
         })
         addEventListener(this.getUpdateEventName(), (e)=>{
-
-            this.Mesh.draw(this.shader);
+            this.Mesh?.draw(this.shader);
         });
     }
 
@@ -187,6 +183,9 @@ class SceneObject {
 
     getModelMatrix(){
         return this.transform.getModelMatrix();
+    }
+    static CreateEmptySceneObject(){
+        return new SceneObject();
     }
 }
 
