@@ -166,8 +166,8 @@ async function test() {
         const skyboxShader = await initShader("glsl/skybox-vertex.glsl", "glsl/skybox-fragment.glsl", gl);
 
         let meshMap = await OBJ.downloadModels([{
-            obj:"/public_html/Models/SunModel/SunModel.obj",
-            mtl:"/public_html/Models/SunModel/SunModel.mtl",
+            obj:"/Models/SunModel/SunModel.obj",
+            mtl:"/Models/SunModel/SunModel.mtl",
             downloadMtlTextures: true,
             name:"sunMesh"
         }])
