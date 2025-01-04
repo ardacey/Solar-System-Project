@@ -1,5 +1,3 @@
-
-
 class Time{
     perfectFrameTime = 1000 / 60;
     deltaTime = 0;

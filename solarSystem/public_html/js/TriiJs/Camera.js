@@ -63,9 +63,10 @@ class Camera{
     processCameraMovement(deltaX, deltaY) {
         let right = vec3.create();
         vec3.normalize(right,vec3.cross(right,this.front, this.up));
+        console.log(vec3.normalize(this.up,this.up))
         let velocity = vec3.add(vec3.create(),
-            vec3.multiplyScalar(vec3.create(),right,deltaX*this.movementSpeed),
-            vec3.multiplyScalar(vec3.create(),vec3.normalize(this.up,this.up),deltaY*this.movementSpeed));
+            vec3.scale(vec3.create(),right,deltaX*this.movementSpeed),
+            vec3.scale(vec3.create(),vec3.normalize(this.up,this.up),deltaY*this.movementSpeed));
 
         this.target = vec3.add(this.target,this.target, velocity);
 

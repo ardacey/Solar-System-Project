@@ -10,6 +10,7 @@ class CelestialBodyScript extends SceneObjectScript {
     yaw;
     rotation;
 
+
     // Scaling factors
     static DISTANCE_SCALE = 1e-9;  // 1 unit = 1 billion meters
     static SIZE_SCALE = 1e-7;      // 1 unit = 10 million meters
@@ -22,6 +23,7 @@ class CelestialBodyScript extends SceneObjectScript {
 
     Start() {
         super.Start();
+        this.getTransform().position = vec3.fromValues(0,0,0);
     }
 
     Update() {
@@ -31,7 +33,7 @@ class CelestialBodyScript extends SceneObjectScript {
     }
 
     updateRotation() {
-        const rotationAngle = (2 * Math.PI * time.deltaTime) / this.rotationPeriod;
+        const rotationAngle = (2 * Math.PI * time.deltaTime)*100000 / this.rotationPeriod;
         this.rotation.y += rotationAngle;
         this.sceneObject.transform.rotation = vec3.fromValues(
             this.rotation.x,
@@ -93,6 +95,7 @@ class PlanetScript extends CelestialBodyScript {
         this.updateOrbitalPosition();
         this.sceneObject.shader.setUniform3FVector("lightPos", [0, 0, 0]);  // Light at sun's position
         this.sceneObject.shader.setUniform3FVector("lightColor", [1, 1, 1]);
+        this.sceneObject.scene.camera.target = this.sceneObject.transform.position;
         // this.updateSurfaceTemperature();
     }
 
@@ -247,10 +250,7 @@ class SkyboxScript extends SceneObjectScript {
     Update() {
         super.Update();
         if (this.textureLoaded) {
-            console.log("Attempting to render skybox");
             this.render();
-        } else {
-            console.log("Waiting for skybox texture to load...");
         }
     }
 
@@ -289,7 +289,6 @@ class SkyboxScript extends SceneObjectScript {
             uSkybox: this.texture
         };
 
-        console.log("Rendering skybox with uniforms:", uniforms);
 
         try {
             // Set buffers and uniforms
@@ -301,7 +300,6 @@ class SkyboxScript extends SceneObjectScript {
             twgl.drawBufferInfo(gl, this.bufferInfo);
             gl.depthMask(true);
 
-            console.log("Skybox rendered successfully");
         } catch (error) {
             console.error("Error rendering skybox:", error);
         }
