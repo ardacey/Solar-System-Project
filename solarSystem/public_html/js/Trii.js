@@ -202,13 +202,25 @@ class Transform {
         let rotateMatrixX = this.rotateX(this.rotation[0]);
         let rotateMatrixY = this.rotateY(this.rotation[1]);
         let rotateMatrixZ = this.rotateZ(this.rotation[2]);
+        let rotateMatrix = mat4.create();
+        mat4.mul(rotateMatrix,rotateMatrixZ,
+            mat4.mul(rotateMatrix,rotateMatrixY,rotateMatrixX));
+
+        let rotateAroundCenterMatrix = rotateMatrix;
+        let minusPositionTranslate = mat4.create();
+        let plusPositionTranslate = mat4.create();
+
+        mat4.translate(minusPositionTranslate, minusPositionTranslate, vec3.scale(vec3.create,this.position,-1));
+        mat4.translate(minusPositionTranslate, minusPositionTranslate, this.position);
+
+        mat4.mul(rotateAroundCenterMatrix,plusPositionTranslate,
+            mat4.mul(rotateAroundCenterMatrix,rotateAroundCenterMatrix,minusPositionTranslate));
+
         let translationMatrix = mat4.translate(mat4.create(),mat4.create(),vec3.fromValues(this.position[0], this.position[1], this.position[2]));
         let scalingMatrix = mat4.scale(mat4.create(),mat4.create(),vec3.fromValues(this.scale[0],this.scale[1],this.scale[2]));
         let modelMatrix = mat4.create();
         mat4.mul(modelMatrix,translationMatrix,
-            mat4.mul(modelMatrix,rotateMatrixZ,
-                mat4.mul(modelMatrix,rotateMatrixY,
-                    mat4.mul(modelMatrix,rotateMatrixX,scalingMatrix))));
+            mat4.mul(modelMatrix,rotateAroundCenterMatrix,scalingMatrix));
         return modelMatrix;
     }
 
@@ -263,6 +275,7 @@ class MaterialHandler {
 
 class Mesh{
     meshOBJ;
+    center;
     gl;
 
     bufferInfo;
@@ -301,6 +314,7 @@ class Mesh{
 
     setupMesh(){
         let gl = this.gl;
+        this.centerMesh();
 
         let positions = this.meshOBJ.vertices;
         let normals = this.meshOBJ.vertexNormals;
@@ -317,5 +331,46 @@ class Mesh{
         }
 
         this.bufferInfo = twgl.createBufferInfoFromArrays(gl,arrays);
+    }
+
+    calculateCenter() {
+        const vertices = this.meshOBJ.vertices;
+        let minX = Infinity, minY = Infinity, minZ = Infinity;
+        let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+
+        // Find bounds
+        for (let i = 0; i < vertices.length; i += 3) {
+            const x = vertices[i];
+            const y = vertices[i + 1];
+            const z = vertices[i + 2];
+
+            minX = Math.min(minX, x);
+            minY = Math.min(minY, y);
+            minZ = Math.min(minZ, z);
+            maxX = Math.max(maxX, x);
+            maxY = Math.max(maxY, y);
+            maxZ = Math.max(maxZ, z);
+        }
+
+        // Calculate center
+        const centerX = (minX + maxX) / 2;
+        const centerY = (minY + maxY) / 2;
+        const centerZ = (minZ + maxZ) / 2;
+
+        return vec3.fromValues(centerX, centerY, centerZ );
+    }
+
+    centerMesh() {
+        const center = this.calculateCenter();
+        const vertices = this.meshOBJ.vertices;
+
+        // Offset all vertices by the negative center to move mesh to origin
+        for (let i = 0; i < vertices.length; i += 3) {
+            vertices[i] -= center[0];     // X
+            vertices[i + 1] -= center[1]; // Y
+            vertices[i + 2] -= center[2]; // Z
+        }
+
+        return center; // Return the offset in case it's needed
     }
 }

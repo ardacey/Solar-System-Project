@@ -29,6 +29,7 @@ class CelestialBodyScript extends SceneObjectScript {
     Update() {
         super.Update();
         this.updateRotation()
+        console.log(this.getTransform().position);
         // The Mesh class will handle the drawing
     }
 
@@ -95,7 +96,7 @@ class PlanetScript extends CelestialBodyScript {
         this.updateOrbitalPosition();
         this.sceneObject.shader.setUniform3FVector("lightPos", [0, 0, 0]);  // Light at sun's position
         this.sceneObject.shader.setUniform3FVector("lightColor", [1, 1, 1]);
-        this.sceneObject.scene.camera.target = this.sceneObject.transform.position;
+        //this.sceneObject.scene.camera.target = this.sceneObject.transform.position;
         // this.updateSurfaceTemperature();
     }
 
