@@ -150,6 +150,64 @@ async function main() {
                 scene.camera.processZoom(e.deltaY <= 0 ? 1 : -1);
             });
         }
+
+        interfaceHandler();
+        function interfaceHandler() {
+            const centerSun = document.getElementById("centerSun");
+            const centerEarth = document.getElementById("centerEarth");
+
+            centerSun?.addEventListener("click", () => handlePlanetClick(getSunInfo()));
+            centerEarth?.addEventListener("click", () => handlePlanetClick(getEarthInfo()));
+
+            handlePlanetClick(null);
+            function handlePlanetClick(planetData) {
+                if (planetData) {
+                    updateInfoBox(planetData);
+                }
+            }
+
+            function updateInfoBox(planet) {
+                const infoContent = document.getElementById("infoContent");
+                if (!planet) {
+                    infoContent.innerHTML = `<strong>No planet data available.</strong>`;
+                    return;
+                }
+
+                const {
+                    name = "Unknown",
+                    mass = 0,
+                    radius = 0,
+                    surfaceTemperature: temperature = 0,
+                    velocity = 0,
+                    rotationPeriod = 0,
+                    obliquity = 0,
+                    argumentOfObliquity = 0,
+                    yaw = 0,
+                    position: { x = 0, y = 0, z = 0 } = {},
+                    orbitalPeriod = 0,
+                    orbitalDistance = 0,
+                    angle = 0,
+                    luminosity = 0,
+                } = planet;
+
+                infoContent.innerHTML = `
+                    <strong>Name:</strong> ${name} <br>
+                    <strong>Mass:</strong> ${mass.toExponential(2)} kg <br>
+                    <strong>Radius:</strong> ${radius.toFixed(2)} m <br>
+                    <strong>Temperature:</strong> ${temperature.toFixed(2)} K <br>
+                    <strong>Velocity:</strong> ${velocity.toFixed(2)} rad/s <br>
+                    <strong>Rotation Period:</strong> ${rotationPeriod.toFixed(2)} s <br>
+                    <strong>Obliquity:</strong> ${obliquity.toFixed(2)}° <br>
+                    <strong>Argument of Obliquity:</strong> ${argumentOfObliquity.toFixed(2)}° <br>
+                    <strong>Yaw:</strong> ${yaw.toFixed(2)}° <br>
+                    <strong>Position:</strong> (${x.toFixed(2)}, ${y.toFixed(2)}, ${z.toFixed(2)}) <br>
+                    <strong>Orbital Period:</strong> ${orbitalPeriod.toFixed(2)} s <br>
+                    <strong>Orbital Distance:</strong> ${orbitalDistance.toExponential(2)} m <br>
+                    <strong>Angle:</strong> ${angle.toFixed(2)}° <br>
+                    <strong>Luminosity:</strong> ${luminosity.toExponential(2)} W <br>
+                `;
+            }
+        }
     }
 
     function resizeCanvasToDisplaySize() {
