@@ -20,7 +20,7 @@ class Camera{
 
     target;
     radius;
-    constructor(position = vec3.fromValues(0,0,0), up = vec3.fromValues(0,1,0), yaw = YAW, pitch = PITCH, target = vec3.fromValues(0, 0, 0), radius = -30) {
+    constructor(position = vec3.fromValues(0,0,0), up = vec3.fromValues(0,1,0), yaw = YAW, pitch = PITCH, target = vec3.fromValues(0, 0, 0), radius = -300) {
         this.front = vec3.fromValues(0,0,-1);
         this.right = vec3.create();
         this.up = vec3.create();

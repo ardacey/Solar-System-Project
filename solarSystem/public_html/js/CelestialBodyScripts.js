@@ -23,12 +23,12 @@ class CelestialBodyScript extends SceneObjectScript {
 
     Start() {
         super.Start();
-        this.getTransform().position = vec3.fromValues(0,0,0);
     }
 
     Update() {
         super.Update();
-        this.updateRotation()
+        this.updateRotation();
+        this.updateTransform();
         // The Mesh class will handle the drawing
     }
 
@@ -77,7 +77,7 @@ class StarScript extends CelestialBodyScript {
     }
 }
 
-class PlanetScript extends CelestialBodyScript {
+class PlanetScript extends CelestialBodyScript{
     orbitalPeriod;
     orbitalDistance;
     angle;
@@ -89,13 +89,19 @@ class PlanetScript extends CelestialBodyScript {
         this.angle = 0;
     }
 
+    Start() {
+        super.Start();
+
+        console.log(this.sceneObject.transform.position)
+
+    }
+
     Update() {
         super.Update();
         this.updateTransform();
         this.updateOrbitalPosition();
         this.sceneObject.shader.setUniform3FVector("lightPos", [0, 0, 0]);  // Light at sun's position
         this.sceneObject.shader.setUniform3FVector("lightColor", [1, 1, 1]);
-        //this.sceneObject.scene.camera.target = this.sceneObject.transform.position;
         // this.updateSurfaceTemperature();
     }
 
@@ -307,5 +313,35 @@ class SkyboxScript extends SceneObjectScript {
         // Restore GL state
         gl.depthFunc(currentDepthFunc);
         gl.enable(gl.CULL_FACE);
+    }
+}
+
+class CameraFollowerScript extends SceneObjectScript{
+    targetBody;
+    camera;
+    constructor(sceneObject,potentialTargets,targetBody) {
+        super(sceneObject);
+        this.targetBody = targetBody
+        this.potentialTargets = potentialTargets
+    }
+
+    Start() {
+        super.Start();
+        this.camera = this.sceneObject.scene.camera;
+    }
+
+    Update() {
+        if(this.targetBody)
+        this.camera.target = this.targetBody.transform.position;
+    }
+
+    lockCamera(targetObjectName){
+        let targetBody = this.potentialTargets[targetObjectName];
+        console.log(targetBody);
+        if(targetBody){
+            this.targetBody = targetBody;
+        }
+        console.log(this.targetBody);
+
     }
 }

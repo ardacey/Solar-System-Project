@@ -78,7 +78,13 @@ async function main() {
             orbitalDistance: 149.6e9
         }]);
         earthScript.centralStar = sunObject.SceneObjectScripts.find(script => script instanceof StarScript);
-        // sceneObjects.push(earthObject);
+        sceneObjects.push(earthObject);
+
+        //Create CameraFollower
+        const cameraObject = SceneObject.CreateEmptySceneObject();
+        BindSceneObject(cameraObject, CameraFollowerScript,[{sun:sunObject,earth:earthObject}]);
+        sceneObjects.push(cameraObject);
+
 
 
         // Create scene
@@ -156,8 +162,10 @@ async function main() {
             const centerSun = document.getElementById("centerSun");
             const centerEarth = document.getElementById("centerEarth");
 
-            centerSun?.addEventListener("click", () => handlePlanetClick(getSunInfo()));
-            centerEarth?.addEventListener("click", () => handlePlanetClick(getEarthInfo()));
+            const cameraHandler = scene.getInstancesOf(CameraFollowerScript)[0];
+
+            centerSun?.addEventListener("click", () => cameraHandler.lockCamera("sun"));
+            centerEarth?.addEventListener("click", () => cameraHandler.lockCamera("earth"));
 
             handlePlanetClick(null);
             function handlePlanetClick(planetData) {

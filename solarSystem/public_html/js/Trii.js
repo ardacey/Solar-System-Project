@@ -139,6 +139,17 @@ class Scene {
         shader?.setUniforms(uniforms);
     }
 
+    getInstancesOf(instance){
+        let returnElements = [];
+        for (let i = 0; i <this.listOfSceneObjects.length ; i++) {
+            let element = this.listOfSceneObjects[i].SceneObjectScripts.find(script => script instanceof instance);
+            if(element){
+                returnElements.push(element);
+            }
+        }
+        return returnElements;
+    }
+
 
 }
 
