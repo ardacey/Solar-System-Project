@@ -29,7 +29,6 @@ class CelestialBodyScript extends SceneObjectScript {
     Update() {
         super.Update();
         this.updateRotation()
-        console.log(this.getTransform().position);
         // The Mesh class will handle the drawing
     }
 

@@ -275,7 +275,6 @@ class MaterialHandler {
 
 class Mesh{
     meshOBJ;
-    center;
     gl;
 
     bufferInfo;
@@ -362,6 +361,7 @@ class Mesh{
 
     centerMesh() {
         const center = this.calculateCenter();
+        console.log(center)
         const vertices = this.meshOBJ.vertices;
 
         // Offset all vertices by the negative center to move mesh to origin

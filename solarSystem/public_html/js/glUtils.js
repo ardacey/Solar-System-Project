@@ -4,6 +4,7 @@ const vec3 = glMatrix.vec3;
 const gl_Matrix = glMatrix.glMatrix;
 const twgl = window.twgl;
 const OBJ = window.OBJ;
+const CANNON = window.CANNON;
 
 async function ReadFile(filePath) {
     const response = await fetch(filePath);
