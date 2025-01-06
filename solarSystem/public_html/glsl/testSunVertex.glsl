@@ -12,7 +12,7 @@
   uniform float time;
 
   // Varying değişkenler
-  in vec4 a_position; // Vertex pozisyonu
+
   out vec3 vTexCoord3D; // Fragment shader'a gönderilecek 3D koordinatlar
 
   void main(void) {

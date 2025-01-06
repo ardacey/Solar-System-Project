@@ -102,7 +102,7 @@ precision highp float;
     float amplitude = 1.0;
     for (int i = 0; i < 4; i++) {
       total += snoise(position * frequency) * amplitude;
-      frequency *= 20.0;
+      frequency *= 10.0;
       maxAmplitude += amplitude;
       amplitude *= persistence;
     }
