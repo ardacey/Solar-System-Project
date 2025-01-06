@@ -39,11 +39,59 @@ async function main() {
                 name:"sunMesh"
             },
             {
+                obj:"Models/MercuryModel/MercuryModel.obj",
+                mtl:"Models/MercuryModel/MercuryModel.mtl",
+                downloadMtlTextures: true,
+                name:"mercuryMesh"
+            },
+            {
+                obj:"Models/VenusModel/VenusModel.obj",
+                mtl:"Models/VenusModel/VenusModel.mtl",
+                downloadMtlTextures: true,
+                name:"venusMesh"
+            },
+            {
                 obj:"Models/EarthModel/EarthModel.obj",
                 mtl:"Models/EarthModel/EarthModel.mtl",
                 downloadMtlTextures: true,
                 name:"earthMesh"
-            }
+            },
+            {
+                obj:"Models/MarsModel/MarsModel.obj",
+                mtl:"Models/MarsModel/MarsModel.mtl",
+                downloadMtlTextures: true,
+                name:"marsMesh"
+            },
+            {
+                obj:"Models/JupiterModel/JupiterModel.obj",
+                mtl:"Models/JupiterModel/JupiterModel.mtl",
+                downloadMtlTextures: true,
+                name:"jupiterMesh"
+            },
+            {
+                obj:"Models/SaturnModel/SaturnModel.obj",
+                mtl:"Models/SaturnModel/SaturnModel.mtl",
+                downloadMtlTextures: true,
+                name:"saturnMesh"
+            },
+            {
+                obj:"Models/UranusModel/UranusModel.obj",
+                mtl:"Models/UranusModel/UranusModel.mtl",
+                downloadMtlTextures: true,
+                name:"uranusMesh"
+            },
+            {
+                obj:"Models/NeptuneModel/NeptuneModel.obj",
+                mtl:"Models/NeptuneModel/NeptuneModel.mtl",
+                downloadMtlTextures: true,
+                name:"neptuneMesh"
+            },
+            {
+                obj:"Models/PlutoModel/PlutoModel.obj",
+                mtl:"Models/PlutoModel/PlutoModel.mtl",
+                downloadMtlTextures: true,
+                name:"plutoMesh"
+            },
         ])
 
         // Create scene objects
@@ -55,48 +103,90 @@ async function main() {
         sceneObjects.push(skyboxObject);
 
 
-        // Create sun
+        // Create Sun
         const sunMesh = new Mesh(meshMap["sunMesh"],gl);
         const sunObject = new SceneObject(sunMesh, celestialShader);
-        BindSceneObject(sunObject, StarScript, [{
-            name: "Sun",
-            mass: 1.989e30,
-            radius: 696340000,
-            surfaceTemperature: 5778,
-            angularVelocity: 0,
-            rotationPeriod: 25.38 * 24 * 3600,
-            obliquity: 7.25,
-            argumentOfObliquity: 0,
-            yaw: 0,
-            luminosity: 3.828e26
-        }]);
+        BindSceneObject(sunObject, StarScript, [CelestialBodyProperties.Sun]);
         sceneObjects.push(sunObject);
 
-        // Create earth
-        const earthMesh = new Mesh(meshMap["sunMesh"],gl);
+        // Create Mercury
+        const mercuryMesh = new Mesh(meshMap["mercuryMesh"],gl);
+        const mercuryObject = new SceneObject(mercuryMesh, celestialShader);
+        const mercuryScript = BindSceneObject(mercuryObject, PlanetScript, [CelestialBodyProperties.Mercury]);
+        mercuryScript.centralStar = sunObject.SceneObjectScripts.find(script => script instanceof StarScript);
+        sceneObjects.push(mercuryObject);
+
+        // Create Venus
+        const venusMesh = new Mesh(meshMap["venusMesh"],gl);
+        const venusObject = new SceneObject(venusMesh, celestialShader);
+        const venusScript = BindSceneObject(venusObject, PlanetScript, [CelestialBodyProperties.Venus]);
+        venusScript.centralStar = sunObject.SceneObjectScripts.find(script => script instanceof StarScript);
+        sceneObjects.push(venusObject);
+
+        // Create Earth
+        const earthMesh = new Mesh(meshMap["earthMesh"],gl);
         const earthObject = new SceneObject(earthMesh, celestialShader);
-        const earthScript = BindSceneObject(earthObject, PlanetScript, [{
-            name: "Earth",
-            mass: 5.972e24,
-            radius: 6371000,
-            surfaceTemperature: 288,
-            angularVelocity: 7.2921159e-5,
-            rotationPeriod: 24 * 3600,
-            obliquity: 23.44,
-            argumentOfObliquity: 0,
-            yaw: 0,
-            orbitalPeriod: 365.256 * 24 * 3600,
-            orbitalDistance: 149.6e9
-        }]);
+        const earthScript = BindSceneObject(earthObject, PlanetScript, [CelestialBodyProperties.Earth]);
         earthScript.centralStar = sunObject.SceneObjectScripts.find(script => script instanceof StarScript);
         sceneObjects.push(earthObject);
 
+        // Create Mars
+        const marsMesh = new Mesh(meshMap["marsMesh"],gl);
+        const marsObject = new SceneObject(marsMesh, celestialShader);
+        const marsScript = BindSceneObject(marsObject, PlanetScript, [CelestialBodyProperties.Mars]);
+        marsScript.centralStar = sunObject.SceneObjectScripts.find(script => script instanceof StarScript);
+        sceneObjects.push(marsObject);
+
+        // Create Jupiter
+        const jupiterMesh = new Mesh(meshMap["jupiterMesh"],gl);
+        const jupiterObject = new SceneObject(jupiterMesh, celestialShader);
+        const jupiterScript = BindSceneObject(jupiterObject, PlanetScript, [CelestialBodyProperties.Jupiter]);
+        jupiterScript.centralStar = sunObject.SceneObjectScripts.find(script => script instanceof StarScript);
+        sceneObjects.push(jupiterObject);
+
+        // Create Saturn
+        const saturnMesh = new Mesh(meshMap["saturnMesh"],gl);
+        const saturnObject = new SceneObject(saturnMesh, celestialShader);
+        const saturnScript = BindSceneObject(saturnObject, PlanetScript, [CelestialBodyProperties.Saturn]);
+        saturnScript.centralStar = sunObject.SceneObjectScripts.find(script => script instanceof StarScript);
+        sceneObjects.push(saturnObject);
+
+        // Create Uranus
+        const uranusMesh = new Mesh(meshMap["uranusMesh"],gl);
+        const uranusObject = new SceneObject(uranusMesh, celestialShader);
+        const uranusScript = BindSceneObject(uranusObject, PlanetScript, [CelestialBodyProperties.Uranus]);
+        uranusScript.centralStar = sunObject.SceneObjectScripts.find(script => script instanceof StarScript);
+        sceneObjects.push(uranusObject);
+
+        // Create Neptune
+        const neptuneMesh = new Mesh(meshMap["neptuneMesh"],gl);
+        const neptuneObject = new SceneObject(neptuneMesh, celestialShader);
+        const neptuneScript = BindSceneObject(neptuneObject, PlanetScript, [CelestialBodyProperties.Neptune]);
+        neptuneScript.centralStar = sunObject.SceneObjectScripts.find(script => script instanceof StarScript);
+        sceneObjects.push(neptuneObject);
+
+        // Create Pluto
+        const plutoMesh = new Mesh(meshMap["plutoMesh"],gl);
+        const plutoObject = new SceneObject(plutoMesh, celestialShader);
+        const plutoScript = BindSceneObject(plutoObject, PlanetScript, [CelestialBodyProperties.Pluto]);
+        plutoScript.centralStar = sunObject.SceneObjectScripts.find(script => script instanceof StarScript);
+        sceneObjects.push(plutoObject);
+
         //Create CameraFollower
         const cameraObject = SceneObject.CreateEmptySceneObject();
-        BindSceneObject(cameraObject, CameraFollowerScript,[{sun:sunObject,earth:earthObject}]);
+        BindSceneObject(cameraObject, CameraFollowerScript,[{
+            sun:sunObject,
+            mercury:mercuryObject,
+            venus:venusObject,
+            earth:earthObject,
+            mars:marsObject,
+            jupiter:jupiterObject,
+            saturn:saturnObject,
+            uranus:uranusObject,
+            neptune:neptuneObject,
+            pluto:plutoObject,
+        }]);
         sceneObjects.push(cameraObject);
-
-
 
         // Create scene
         const scene = new Scene(sceneObjects, new Camera(vec3.fromValues(0, 0, 360)), canvas);
@@ -171,7 +261,15 @@ async function main() {
         interfaceHandler();
         function interfaceHandler() {
             const centerSun = document.getElementById("centerSun");
+            const centerMercury = document.getElementById("centerMercury");
+            const centerVenus = document.getElementById("centerVenus");
             const centerEarth = document.getElementById("centerEarth");
+            const centerMars = document.getElementById("centerMars");
+            const centerJupiter = document.getElementById("centerJupiter");
+            const centerSaturn = document.getElementById("centerSaturn");
+            const centerUranus = document.getElementById("centerUranus");
+            const centerNeptune = document.getElementById("centerNeptune");
+            const centerPluto = document.getElementById("centerPluto");
 
             const cameraHandler = scene.getInstancesOf(CameraFollowerScript)[0];
 
@@ -179,10 +277,42 @@ async function main() {
                 cameraHandler.lockCamera("sun")
                 targetBody = "Sun";
             });
+            centerMercury?.addEventListener("click", () => {
+                cameraHandler.lockCamera("mercury")
+                targetBody = "Mercury";
+            })
+            centerVenus?.addEventListener("click", () => {
+                cameraHandler.lockCamera("venus")
+                targetBody = "Venus";
+            })
             centerEarth?.addEventListener("click", () => {
                 cameraHandler.lockCamera("earth")
                 targetBody = "Earth";
             });
+            centerMars?.addEventListener("click", () => {
+                cameraHandler.lockCamera("mars")
+                targetBody = "Mars";
+            });
+            centerJupiter?.addEventListener("click", () => {
+                cameraHandler.lockCamera("jupiter")
+                targetBody = "Jupiter";
+            });
+            centerSaturn?.addEventListener("click", () => {
+                cameraHandler.lockCamera("saturn")
+                targetBody = "Saturn";
+            })
+            centerUranus?.addEventListener("click", () => {
+                cameraHandler.lockCamera("uranus")
+                targetBody = "Uranus";
+            })
+            centerNeptune?.addEventListener("click", () => {
+                cameraHandler.lockCamera("neptune")
+                targetBody = "Neptune";
+            })
+            centerPluto?.addEventListener("click", () => {
+                cameraHandler.lockCamera("pluto")
+                targetBody = "Pluto";
+            })
         }
     }
 
