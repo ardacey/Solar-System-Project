@@ -107,7 +107,7 @@ async function main() {
         // Create Sun
         const sunMesh = new Mesh(meshMap["sunMesh"],gl);
 
-        const sunObject = new SceneObject(sunMesh, celestialShader);
+        const sunObject = new SceneObject(sunMesh, sunShader);
         BindSceneObject(sunObject, StarScript, [CelestialBodyProperties.Sun]);
         sceneObjects.push(sunObject);
 
