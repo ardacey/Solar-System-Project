@@ -1,5 +1,6 @@
 class CelestialBodyScript extends SceneObjectScript {
     // Physics properties
+    name;
     mass;
     radius;
     surfaceTemperature;
@@ -63,6 +64,26 @@ class CelestialBodyScript extends SceneObjectScript {
             scaledRadius
         );
     }
+
+    getData(targetObjectName) {
+        const celestialBodies = this.sceneObject.scene.getInstancesOf(CelestialBodyScript);
+        const targetBody = celestialBodies.find(body => body.name === targetObjectName);
+
+        return {
+            name: targetBody.name,
+            mass: targetBody.mass,
+            radius: targetBody.radius,
+            surfaceTemperature: targetBody.surfaceTemperature,
+            rotationPeriod: targetBody.rotationPeriod,
+            obliquity: targetBody.obliquity,
+            argumentOfObliquity: targetBody.argumentOfObliquity,
+            yaw: targetBody.yaw,
+            position: targetBody.sceneObject.transform.position,
+            orbitalPeriod: targetBody.orbitalPeriod,
+            orbitalDistance: targetBody.orbitalDistance,
+            luminosity: targetBody.luminosity
+        };
+    }
 }
 
 class StarScript extends CelestialBodyScript {
@@ -70,6 +91,7 @@ class StarScript extends CelestialBodyScript {
 
     constructor(sceneObject, params) {
         super(sceneObject, params);
+        Object.assign(this, params);
     }
 
     getLightIntensityAtDistance(distance) {

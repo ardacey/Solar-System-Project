@@ -1,6 +1,7 @@
 "use strict";
 
 let shapeShader;
+let targetBody = "Sun";
 
 function clearGlBuffer(gl){
     gl.clearColor(0.0,0.0,0.0,1.0);
@@ -50,6 +51,7 @@ async function main() {
         const sunMesh = new Mesh(meshMap["sunMesh"],gl);
         const sunObject = new SceneObject(sunMesh, celestialShader);
         BindSceneObject(sunObject, StarScript, [{
+            name: "Sun",
             mass: 1.989e30,
             radius: 696340000,
             surfaceTemperature: 5778,
@@ -66,6 +68,7 @@ async function main() {
         const earthMesh = new Mesh(meshMap["sunMesh"],gl);
         const earthObject = new SceneObject(earthMesh, celestialShader);
         const earthScript = BindSceneObject(earthObject, PlanetScript, [{
+            name: "Earth",
             mass: 5.972e24,
             radius: 6371000,
             surfaceTemperature: 288,
@@ -164,46 +167,46 @@ async function main() {
 
             const cameraHandler = scene.getInstancesOf(CameraFollowerScript)[0];
 
-            centerSun?.addEventListener("click", () => cameraHandler.lockCamera("sun"));
-            centerEarth?.addEventListener("click", () => cameraHandler.lockCamera("earth"));
+            centerSun?.addEventListener("click", () => {
+                cameraHandler.lockCamera("sun")
+                targetBody = "Sun";
+            });
+            centerEarth?.addEventListener("click", () => {
+                cameraHandler.lockCamera("earth")
+                targetBody = "Earth";
+            });
+        }
+    }
 
-            handlePlanetClick(null);
-            function handlePlanetClick(planetData) {
-                if (planetData) {
-                    updateInfoBox(planetData);
-                }
-            }
+    function updateInfoBox(target) {
+        const infoHandler = scene.getInstancesOf(CelestialBodyScript)[0];
+        const targetBody = infoHandler.getData(target);
+        const infoContent = document.getElementById("infoContent");
+        if (!target) {
+            infoContent.innerHTML = `<strong>No data available.</strong>`;
+            return;
+        }
 
-            function updateInfoBox(planet) {
-                const infoContent = document.getElementById("infoContent");
-                if (!planet) {
-                    infoContent.innerHTML = `<strong>No planet data available.</strong>`;
-                    return;
-                }
+        const {
+            name = "Unknown",
+            mass = 0,
+            radius = 0,
+            surfaceTemperature: temperature = 0,
+            rotationPeriod = 0,
+            obliquity = 0,
+            argumentOfObliquity = 0,
+            yaw = 0,
+            position: [x = 0, y = 0, z = 0] = [],
+            orbitalPeriod = 0,
+            orbitalDistance = 0,
+            luminosity = 0,
+        } = targetBody;
 
-                const {
-                    name = "Unknown",
-                    mass = 0,
-                    radius = 0,
-                    surfaceTemperature: temperature = 0,
-                    velocity = 0,
-                    rotationPeriod = 0,
-                    obliquity = 0,
-                    argumentOfObliquity = 0,
-                    yaw = 0,
-                    position: { x = 0, y = 0, z = 0 } = {},
-                    orbitalPeriod = 0,
-                    orbitalDistance = 0,
-                    angle = 0,
-                    luminosity = 0,
-                } = planet;
-
-                infoContent.innerHTML = `
+        infoContent.innerHTML = `
                     <strong>Name:</strong> ${name} <br>
                     <strong>Mass:</strong> ${mass.toExponential(2)} kg <br>
                     <strong>Radius:</strong> ${radius.toFixed(2)} m <br>
                     <strong>Temperature:</strong> ${temperature.toFixed(2)} K <br>
-                    <strong>Velocity:</strong> ${velocity.toFixed(2)} rad/s <br>
                     <strong>Rotation Period:</strong> ${rotationPeriod.toFixed(2)} s <br>
                     <strong>Obliquity:</strong> ${obliquity.toFixed(2)}° <br>
                     <strong>Argument of Obliquity:</strong> ${argumentOfObliquity.toFixed(2)}° <br>
@@ -211,11 +214,8 @@ async function main() {
                     <strong>Position:</strong> (${x.toFixed(2)}, ${y.toFixed(2)}, ${z.toFixed(2)}) <br>
                     <strong>Orbital Period:</strong> ${orbitalPeriod.toFixed(2)} s <br>
                     <strong>Orbital Distance:</strong> ${orbitalDistance.toExponential(2)} m <br>
-                    <strong>Angle:</strong> ${angle.toFixed(2)}° <br>
                     <strong>Luminosity:</strong> ${luminosity.toExponential(2)} W <br>
                 `;
-            }
-        }
     }
 
     function resizeCanvasToDisplaySize() {
@@ -241,6 +241,7 @@ async function main() {
 
         scene.Update();
 
+        updateInfoBox(targetBody)
 
         requestAnimationFrame(render);
     }
