@@ -1,14 +1,14 @@
 newmtl mat0
-Ns 0
-Ka 1.0 1.0 1.0
+Ns 100.00002
+Ka 0.25 0.25 0.25
 Kd 1 1 1
-Ks 0.01176 0.01176 0.01176
+Ks 0.5 0.5 0.5
 Ke 0.0 0.0 0.0
 Ni 1.0
 d 1
-illum 2
-map_Kd 49_bc.png
-map_Ns 49_mr.png
+illum 3
+map_Kd earth_diff_jpg.png
+bump earth_norm_jpg.png
 
 newmtl mat1
 Ns 250

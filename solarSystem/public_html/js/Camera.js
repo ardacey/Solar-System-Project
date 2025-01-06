@@ -70,7 +70,7 @@ class Camera{
 
         this.target = vec3.add(this.target,this.target, velocity);
 
-        this.updateCameraVectors();
+        // this.updateCameraVectors();
     }
 
     processCameraRotation(xoffset, yoffset, constraintPitch = true){
@@ -85,7 +85,7 @@ class Camera{
             if(this.pitch<-89.0) this.pitch = -89.0;
         }
 
-        this.updateCameraVectors()
+        // this.updateCameraVectors()
     }
 
     processZoom(yoffset){
