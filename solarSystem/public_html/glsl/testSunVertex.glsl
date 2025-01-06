@@ -8,12 +8,6 @@
     uniform mat4 view;
     uniform mat4 projection;
 
-
-
-
-
-
-
   // Uniform değişkenler
   uniform float time;
 
@@ -26,6 +20,6 @@
     vTexCoord3D = (aPos.xyz + vec3(time, time, time));
 
     // Pozisyonu hesapla ve ekrana yerleştir
-    gl_Position = projection * view * vec4(aPos, 1.0);
+    gl_Position = projection * view *model* vec4(aPos, 1.0);
   }
 
