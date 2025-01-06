@@ -31,12 +31,20 @@ async function main() {
         const skyboxShader = await initShader("glsl/skybox-vertex.glsl", "glsl/skybox-fragment.glsl", gl);
         shapeShader = await initShader("glsl/ShapeVertex.glsl", "glsl/ShapeFragment.glsl", gl)
 
-        let meshMap = await OBJ.downloadModels([{
-            obj:"Models/SunModel/SunModel.obj",
-            mtl:"Models/SunModel/SunModel.mtl",
-            downloadMtlTextures: true,
-            name:"sunMesh"
-        }])
+        let meshMap = await OBJ.downloadModels([
+            {
+                obj:"Models/SunModel/SunModel.obj",
+                mtl:"Models/SunModel/SunModel.mtl",
+                downloadMtlTextures: true,
+                name:"sunMesh"
+            },
+            {
+                obj:"Models/EarthModel/EarthModel.obj",
+                mtl:"Models/EarthModel/EarthModel.mtl",
+                downloadMtlTextures: true,
+                name:"earthMesh"
+            }
+        ])
 
         // Create scene objects
         const sceneObjects = [];
