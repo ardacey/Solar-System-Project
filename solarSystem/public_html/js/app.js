@@ -11,7 +11,7 @@ function clearGlBuffer(gl){
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 }
 
-main()
+main();
 
 
 async function main() {
@@ -109,67 +109,69 @@ async function main() {
         BindSceneObject(sunObject, StarScript, [CelestialBodyProperties.Sun]);
         sceneObjects.push(sunObject);
 
+        const sunScript = sunObject.SceneObjectScripts.find(script => script instanceof StarScript);
+
         // Create Mercury
         const mercuryMesh = new Mesh(meshMap["mercuryMesh"],gl);
         const mercuryObject = new SceneObject(mercuryMesh, celestialShader);
         const mercuryScript = BindSceneObject(mercuryObject, PlanetScript, [CelestialBodyProperties.Mercury]);
-        mercuryScript.centralStar = sunObject.SceneObjectScripts.find(script => script instanceof StarScript);
+        mercuryScript.centralStar = sunScript;
         sceneObjects.push(mercuryObject);
 
         // Create Venus
         const venusMesh = new Mesh(meshMap["venusMesh"],gl);
         const venusObject = new SceneObject(venusMesh, celestialShader);
         const venusScript = BindSceneObject(venusObject, PlanetScript, [CelestialBodyProperties.Venus]);
-        venusScript.centralStar = sunObject.SceneObjectScripts.find(script => script instanceof StarScript);
+        venusScript.centralStar = sunScript;
         sceneObjects.push(venusObject);
 
         // Create Earth
         const earthMesh = new Mesh(meshMap["earthMesh"],gl);
         const earthObject = new SceneObject(earthMesh, celestialShader);
         const earthScript = BindSceneObject(earthObject, PlanetScript, [CelestialBodyProperties.Earth]);
-        earthScript.centralStar = sunObject.SceneObjectScripts.find(script => script instanceof StarScript);
+        earthScript.centralStar = sunScript;
         sceneObjects.push(earthObject);
 
         // Create Mars
         const marsMesh = new Mesh(meshMap["marsMesh"],gl);
         const marsObject = new SceneObject(marsMesh, celestialShader);
         const marsScript = BindSceneObject(marsObject, PlanetScript, [CelestialBodyProperties.Mars]);
-        marsScript.centralStar = sunObject.SceneObjectScripts.find(script => script instanceof StarScript);
+        marsScript.centralStar = sunScript;
         sceneObjects.push(marsObject);
 
         // Create Jupiter
         const jupiterMesh = new Mesh(meshMap["jupiterMesh"],gl);
         const jupiterObject = new SceneObject(jupiterMesh, celestialShader);
         const jupiterScript = BindSceneObject(jupiterObject, PlanetScript, [CelestialBodyProperties.Jupiter]);
-        jupiterScript.centralStar = sunObject.SceneObjectScripts.find(script => script instanceof StarScript);
+        jupiterScript.centralStar = sunScript;
         sceneObjects.push(jupiterObject);
 
         // Create Saturn
         const saturnMesh = new Mesh(meshMap["saturnMesh"],gl);
         const saturnObject = new SceneObject(saturnMesh, celestialShader);
         const saturnScript = BindSceneObject(saturnObject, PlanetScript, [CelestialBodyProperties.Saturn]);
-        saturnScript.centralStar = sunObject.SceneObjectScripts.find(script => script instanceof StarScript);
+        saturnScript.centralStar = sunScript;
         sceneObjects.push(saturnObject);
 
         // Create Uranus
         const uranusMesh = new Mesh(meshMap["uranusMesh"],gl);
         const uranusObject = new SceneObject(uranusMesh, celestialShader);
         const uranusScript = BindSceneObject(uranusObject, PlanetScript, [CelestialBodyProperties.Uranus]);
-        uranusScript.centralStar = sunObject.SceneObjectScripts.find(script => script instanceof StarScript);
+        uranusScript.centralStar = sunScript
         sceneObjects.push(uranusObject);
 
         // Create Neptune
         const neptuneMesh = new Mesh(meshMap["neptuneMesh"],gl);
         const neptuneObject = new SceneObject(neptuneMesh, celestialShader);
         const neptuneScript = BindSceneObject(neptuneObject, PlanetScript, [CelestialBodyProperties.Neptune]);
-        neptuneScript.centralStar = sunObject.SceneObjectScripts.find(script => script instanceof StarScript);
+        neptuneScript.centralStar = sunScript;
         sceneObjects.push(neptuneObject);
 
         // Create Pluto
         const plutoMesh = new Mesh(meshMap["plutoMesh"],gl);
         const plutoObject = new SceneObject(plutoMesh, celestialShader);
         const plutoScript = BindSceneObject(plutoObject, PlanetScript, [CelestialBodyProperties.Pluto]);
-        plutoScript.centralStar = sunObject.SceneObjectScripts.find(script => script instanceof StarScript);
+        plutoScript.centralStar = sunScript;
         sceneObjects.push(plutoObject);
 
         //Create CameraFollower
