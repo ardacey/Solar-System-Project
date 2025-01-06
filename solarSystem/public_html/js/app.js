@@ -28,6 +28,7 @@ async function main() {
     async function setupScene() {
         // Initialize shaders
         const celestialShader = await initShader("glsl/SunVertex.glsl", "glsl/SunFragment.glsl", gl);
+        const sunShader = await initShader("glsl/test2vertex.glsl", "glsl/test2frag.glsl", gl);
         const skyboxShader = await initShader("glsl/skybox-vertex.glsl", "glsl/skybox-fragment.glsl", gl);
         shapeShader = await initShader("glsl/ShapeVertex.glsl", "glsl/ShapeFragment.glsl", gl)
 
@@ -105,6 +106,7 @@ async function main() {
 
         // Create Sun
         const sunMesh = new Mesh(meshMap["sunMesh"],gl);
+
         const sunObject = new SceneObject(sunMesh, celestialShader);
         BindSceneObject(sunObject, StarScript, [CelestialBodyProperties.Sun]);
         sceneObjects.push(sunObject);
