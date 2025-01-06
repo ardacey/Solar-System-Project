@@ -361,11 +361,12 @@ class Mesh{
         let range_y = max_y - min_y
         let range_z = max_z - min_z
 
+        let max_range = Math.max(range_x, range_y,range_z);
 
         for (let i = 0; i < vertices.length; i += 3) {
-            vertices[i] = (vertices[i] - min_x)/range_x;     // X
-            vertices[i + 1] = (vertices[i + 1] - min_y)/range_y; // Y
-            vertices[i + 2] = (vertices[i+2] - min_z)/range_z; // Z
+            vertices[i] = (vertices[i] - min_x)/max_range;     // X
+            vertices[i + 1] = (vertices[i + 1] - min_y)/max_range; // Y
+            vertices[i + 2] = (vertices[i+2] - min_z)/max_range; // Z
         }
     }
 

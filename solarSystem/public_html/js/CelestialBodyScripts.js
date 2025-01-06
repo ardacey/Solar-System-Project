@@ -355,6 +355,7 @@ class CameraFollowerScript extends SceneObjectScript{
     Update() {
         if(this.targetBody)
         this.camera.target = this.targetBody.transform.position;
+        this.camera.updateCameraVectors();
     }
 
     lockCamera(targetObjectName){
