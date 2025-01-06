@@ -67,14 +67,28 @@ class CelestialBodyScript extends SceneObjectScript {
 
 class StarScript extends CelestialBodyScript {
     luminosity;
+    time = new Time();
+    totalTime = 0;
 
     constructor(sceneObject, params) {
         super(sceneObject, params);
     }
 
+    Update() {
+        super.Update();
+        this.totalTime+=time.deltaTime/1000;
+        this.sceneObject.scale = 1000;
+        this.sceneObject.shader.setUniform1f("time" , this.totalTime);
+        this.sceneObject.shader.setUniform1f("highTemp" , 5700);
+        this.sceneObject.shader.setUniform1f("lowTemp" , 500);
+
+        // this.updateSurfaceTemperature();
+    }
+
     getLightIntensityAtDistance(distance) {
         return (this.luminosity) / (4 * Math.PI * distance * distance);
     }
+
 }
 
 class PlanetScript extends CelestialBodyScript{
