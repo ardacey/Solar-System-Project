@@ -254,16 +254,16 @@ async function main() {
                 if (document.pointerLockElement && targetBody === "Spaceship") {
                     switch (event.key) {
                         case 'w':
-                            spaceshipScript.speedUp();
+                            spaceshipScript.moveFront();
                             break;
-                        case 'ArrowLeft':
-                            spaceshipScript.rotateLeft(rotationSpeed);
+                        case 's':
+                            spaceshipScript.moveBack();
                             break;
-                        case 'ArrowRight':
-                            spaceshipScript.rotateRight(rotationSpeed);
+                        case 'd':
+                            spaceshipScript.moveRight();
                             break;
-                        case 'ArrowUp':
-                            spaceshipScript.rotateUp(rotationSpeed);
+                        case 'a':
+                            spaceshipScript.moveLeft();
                             break;
                         case 'ArrowDown':
                             spaceshipScript.rotateDown(rotationSpeed);
@@ -275,22 +275,8 @@ async function main() {
             document.addEventListener('keyup', (event) => {
 
                 if (document.pointerLockElement && targetBody === "Spaceship") {
-                    switch (event.key) {
-                        case 'w':
-                            spaceshipScript.speedDown()
-                            break;
-                        case 'ArrowLeft':
-                            spaceshipScript.rotateRight(0);
-                            break;
-                        case 'ArrowRight':
-                            spaceshipScript.rotateLeft(0);
-                            break;
-                        case 'ArrowUp':
-                            spaceshipScript.rotateUp(0);
-                            break;
-                        case 'ArrowDown':
-                            spaceshipScript.rotateDown(0);
-                    }
+
+                    spaceshipScript.stop();
                 }
             });
 

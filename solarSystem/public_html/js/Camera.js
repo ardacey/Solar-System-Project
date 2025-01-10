@@ -51,16 +51,7 @@ class Camera{
         this.normalizeVectors();
     }
 
-    updateSpaceShipCameraVectors() {
-        let forward = vec3.normalize(vec3.create(), vec3.sub(vec3.create(), this.target, this.position));
 
-        let behindPosition = vec3.create();
-        vec3.scale(behindPosition, forward, -10);
-
-        this.position = vec3.add(vec3.create(), this.target, behindPosition);
-
-        this.normalizeVectors()
-    }
 
     normalizeVectors(){
         vec3.normalize(this.front, vec3.sub(this.front, this.target, this.position));

@@ -389,28 +389,53 @@ class SpaceshipScript extends SceneObjectScript {
     }
 
     UpdateRotation() {
-        const rotationMatrix = mat4.create();
-        mat4.rotateX(rotationMatrix, rotationMatrix, this.angle.x * (Math.PI / 180));
-        mat4.rotateY(rotationMatrix, rotationMatrix, this.angle.y * (Math.PI / 180));
+        let cameraDirection = this.sceneObject.scene.camera.front;
+        let direction = vec3.fromValues(0, 0, 1);
+        let rotation = this.calculateEulerAngles(direction, cameraDirection);
 
-        vec3.transformMat4(this.direction, this.direction, rotationMatrix);
 
-        this.rotation.x += this.angle.x;
-        this.rotation.y += this.angle.y;
+        this.getTransform().rotation = rotation;
 
-        this.sceneObject.transform.rotation = vec3.fromValues(
-            this.rotation.x,
-            this.rotation.y,
-            this.rotation.z
-        )
+        // let model = this.getTransform().getModelMatrix();
+        // let inverseTranspose = mat4.transpose(mat4.create(),mat4.invert(mat4.create(),model));
+    }
+
+    calculateEulerAngles(currentDir, targetDir) {
+        // Normalize vectors
+        const current = vec3.create();
+        const target = vec3.create();
+        vec3.normalize(current, currentDir);
+        vec3.normalize(target, targetDir);
+
+        // Calculate yaw (Y-axis rotation)
+        const yaw = Math.atan2(target[0], target[2]) - Math.atan2(current[0], current[2]);
+
+        // Calculate pitch (X-axis rotation)
+        const currentPitch = Math.asin(-current[1]);
+        const targetPitch = Math.asin(-target[1]);
+        const pitch = targetPitch - currentPitch;
+
+        // For this implementation, we assume no roll (Z-axis rotation) is needed
+        const roll = 0;
+
+        const toDegrees = angle => angle * (180 / Math.PI);
+        return vec3.fromValues(
+            toDegrees(pitch),
+            toDegrees(yaw),
+            toDegrees(roll)
+        );
     }
 
     rotateLeft(angle) {this.angle.y = angle;}
     rotateRight(angle) {this.angle.y = -angle;}
     rotateUp(angle) {this.angle.x = -angle;}
     rotateDown(angle) {this.angle.x = angle;}
-    speedUp() {this.speed = 0.5}
-    speedDown(){this.speed = 0}
+    moveFront() {this.speed = 0.5; this.direction = this.sceneObject.scene.camera.front;}
+    moveBack(){this.speed = -0.5; this.direction = this.sceneObject.scene.camera.front;}
+    moveRight(){this.speed = 0.5; this.direction = this.sceneObject.scene.camera.right;}
+    moveLeft(){this.speed = -0.5; this.direction = this.sceneObject.scene.camera.right;}
+    stop(){this.speed = 0}
+
 }
 
 class CameraFollowerScript extends SceneObjectScript{
@@ -432,10 +457,20 @@ class CameraFollowerScript extends SceneObjectScript{
         if(this.targetBody)
         this.camera.target = this.targetBody.transform.position;
         if (this.targetObject === "spaceship") {
-            this.camera.updateSpaceShipCameraVectors()
+            this.updateSpaceShipCameraVectors()
         } else {
             this.camera.updateCameraVectors()
         }
+    }
+
+    updateSpaceShipCameraVectors() {
+        this.camera.updateCameraVectors()
+
+        let behindPosition = vec3.create();
+        vec3.scale(behindPosition, this.camera.front, -10);
+
+        this.camera.position = vec3.add(vec3.create(), this.camera.target, behindPosition);
+
     }
 
     lockCamera(targetObjectName){
