@@ -134,9 +134,9 @@ float fbm(vec4 p) {
 }
 
 vec3 brightnessToColor(float b){
-    b *= 0.25;
+    b *= 0.35; // Parlaklığı artırdık
 
-    return (vec3(b, b*b, b*b*b*b)/0.25)*0.6;
+    return (vec3(b, b*b, b*b*b*b)/0.25)*0.8; // Renk yoğunluğunu artırdık
 }
 
 
@@ -145,8 +145,8 @@ void main() {
     float noisy = fbm(p);
     vec4 p1 = vec4(vPosition*6., time);
     float spots = max(snoise(p1),0.);
-    float final = noisy * mix(1.,spots,0.4);
-    vec3 color = brightnessToColor(abs(final))*5.;
+    float final = noisy * mix(1.,spots,0.3); // Koyu noktaların etkisini azalttık
+    vec3 color = brightnessToColor(abs(final))*6.0; // Final parlaklığı artırdık
     FragColor = vec4(color, 1.0);
 
 }
