@@ -372,13 +372,24 @@ async function main() {
         }
     }
 
+    const physicsWorld = new PhysicsWorld();
+
+// Add PhysicsIntegrationScript to each celestial body
+    scene.listOfSceneObjects.forEach(obj => {
+        if (obj.SceneObjectScripts.some(script => script instanceof CelestialBodyScript)) {
+            BindSceneObject(obj, PhysicsIntegrationScript, [physicsWorld]);
+        }
+    });
+    console.log(scene.listOfSceneObjects)
+
+
     scene.Start();
 
     render(0);
     function render(timeStamp) {
         time.UpdateTime(timeStamp);
         resizeCanvasToDisplaySize();
-
+        physicsWorld.update(time.deltaTime*1500); // Convert to seconds
         clearGlBuffer(gl);
 
         scene.Update();
