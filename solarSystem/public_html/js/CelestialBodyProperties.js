@@ -1,4 +1,16 @@
 const CelestialBodyProperties = {
+    Halo: {
+        name: "Halo",
+        mass: 0.0,
+        radius: 896340000,
+        surfaceTemperature: 5778,
+        angularVelocity: 0,
+        rotationPeriod: 25.38 * 24 * 360,
+        obliquity: 7.25,
+        argumentOfObliquity: 0,
+        yaw: 0,
+        luminosity: 3.828e26
+    },
     Sun: {
         name: "Sun",
         mass: 1.989e30,
