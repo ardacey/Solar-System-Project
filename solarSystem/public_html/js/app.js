@@ -98,6 +98,12 @@ async function main() {
                 mtl:"Models/SpaceshipModel/SpaceshipModel.mtl",
                 downloadMtlTextures: true,
                 name:"spaceshipMesh"
+            },
+            {
+                obj:"Models/AsteroidModel/AsteroidModel.obj",
+                mtl:"Models/AsteroidModel/AsteroidModel.mtl",
+                downloadMtlTextures: true,
+                name:"asteroidMesh"
             }
         ])
 
@@ -186,6 +192,13 @@ async function main() {
         const spaceshipScript = BindSceneObject(spaceshipObject, SpaceshipScript, [BodyProperties.Spaceship]);
         spaceshipScript.centralStar = sunScript;
         sceneObjects.push(spaceshipObject);
+
+        // Create Asteroid
+        const asteroidMesh = new Mesh(meshMap["asteroidMesh"],gl);
+        const asteroidObject = new SceneObject(asteroidMesh, celestialShader);
+        const asteroidScript = BindSceneObject(asteroidObject, AsteroidScript)
+        asteroidScript.centralStar = sunScript;
+        sceneObjects.push(asteroidObject);
 
         //Create CameraFollower
         const cameraObject = SceneObject.CreateEmptySceneObject();

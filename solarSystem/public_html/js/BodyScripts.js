@@ -377,6 +377,7 @@ class SpaceshipScript extends SceneObjectScript {
         super.Update();
         this.UpdateTransform();
         this.UpdateRotation();
+        this.CheckCollision();
     }
 
     UpdateTransform() {
@@ -426,6 +427,31 @@ class SpaceshipScript extends SceneObjectScript {
         );
     }
 
+    CheckCollision() {
+        this.sceneObject.scene.listOfSceneObjects.forEach(object => {
+            const spaceshipPosition = this.sceneObject.transform.position;
+            const spaceshipRadius = this.sceneObject.transform.scale[0];
+
+            if(object.SceneObjectScripts[0] instanceof AsteroidScript) {
+                const asteroidPosition = object.transform.position;
+                const asteroidRadius = object.transform.scale[0];
+                const distance = vec3.distance(asteroidPosition, spaceshipPosition);
+                if (distance < asteroidRadius + spaceshipRadius) {
+                    console.log("Collision detected with Asteroid Object");
+                    this.sceneObject.scene.listOfSceneObjects.splice(this.sceneObject.scene.listOfSceneObjects.indexOf(object), 1);
+                }
+            } /*else if (object.SceneObjectScripts[0] instanceof CelestialBodyScript) {
+                const celestialPosition = object.transform.position;
+                const celestialRadius = object.transform.scale[0];
+                const distance = vec3.distance(celestialPosition, spaceshipPosition);
+                if (distance < celestialRadius + spaceshipRadius) {
+                    console.log("Collision detected with Celestial Object");
+                    // this.stop();
+                }
+            }*/ // Not Working as Expected (Collision yarıçapı çok büyük, çarpmaya yakın olmasa bile çalışıyor)
+        });
+    }
+
     rotateLeft(angle) {this.angle.y = angle;}
     rotateRight(angle) {this.angle.y = -angle;}
     rotateUp(angle) {this.angle.x = -angle;}
@@ -436,6 +462,27 @@ class SpaceshipScript extends SceneObjectScript {
     moveLeft(){this.speed = -0.5; this.direction = this.sceneObject.scene.camera.right;}
     stop(){this.speed = 0}
 
+}
+
+class AsteroidScript extends SceneObjectScript{
+    direction;
+    velocity;
+
+    constructor(sceneObject, params) {
+        super(sceneObject);
+        Object.assign(this, params);
+        this.direction = vec3.fromValues(0, 0, 1);
+        this.velocity = vec3.fromValues(0, 0, 0);
+    }
+
+    Start() {
+        super.Start();
+        this.sceneObject.transform.position = vec3.fromValues(100, 50, 50);
+    }
+
+    Update() {
+        super.Update();
+    }
 }
 
 class CameraFollowerScript extends SceneObjectScript{
