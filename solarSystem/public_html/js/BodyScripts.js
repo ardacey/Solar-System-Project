@@ -352,9 +352,71 @@ class SkyboxScript extends SceneObjectScript {
     }
 }
 
+class SpaceshipScript extends SceneObjectScript {
+    name;
+    mass;
+    speed;
+    direction;
+    angle;
+
+    constructor(sceneObject, params) {
+        super(sceneObject);
+        Object.assign(this, params);
+        this.speed = 0;
+        this.direction = vec3.fromValues(0, 0, 1);
+        this.rotation = { x: 0, y: 0, z: 0 };
+        this.angle = { x: 0, y: 0 };
+    }
+
+    Start() {
+        super.Start();
+        this.sceneObject.transform.position = vec3.fromValues(50, 50, 50);
+    }
+
+    Update() {
+        super.Update();
+        this.UpdateTransform();
+        this.UpdateRotation();
+    }
+
+    UpdateTransform() {
+        const transform = this.sceneObject.transform;
+        transform.position = vec3.add(
+            transform.position,
+            transform.position,
+            vec3.scale(vec3.create(), this.direction, this.speed * time.deltaTime)
+        );
+    }
+
+    UpdateRotation() {
+        const rotationMatrix = mat4.create();
+        mat4.rotateX(rotationMatrix, rotationMatrix, this.angle.x * (Math.PI / 180));
+        mat4.rotateY(rotationMatrix, rotationMatrix, this.angle.y * (Math.PI / 180));
+
+        vec3.transformMat4(this.direction, this.direction, rotationMatrix);
+
+        this.rotation.x += this.angle.x;
+        this.rotation.y += this.angle.y;
+
+        this.sceneObject.transform.rotation = vec3.fromValues(
+            this.rotation.x,
+            this.rotation.y,
+            this.rotation.z
+        )
+    }
+
+    rotateLeft(angle) {this.angle.y = angle;}
+    rotateRight(angle) {this.angle.y = -angle;}
+    rotateUp(angle) {this.angle.x = -angle;}
+    rotateDown(angle) {this.angle.x = angle;}
+    speedUp() {this.speed = 0.5}
+    speedDown(){this.speed = 0}
+}
+
 class CameraFollowerScript extends SceneObjectScript{
     targetBody;
     camera;
+    targetObject;
     constructor(sceneObject,potentialTargets,targetBody) {
         super(sceneObject);
         this.targetBody = targetBody
@@ -369,16 +431,16 @@ class CameraFollowerScript extends SceneObjectScript{
     Update() {
         if(this.targetBody)
         this.camera.target = this.targetBody.transform.position;
-        this.camera.updateCameraVectors();
+        if (this.targetObject === "spaceship") {
+            this.camera.updateSpaceShipCameraVectors()
+        } else {
+            this.camera.updateCameraVectors()
+        }
     }
 
     lockCamera(targetObjectName){
-        let targetBody = this.potentialTargets[targetObjectName];
-        console.log(targetBody);
-        if(targetBody){
-            this.targetBody = targetBody;
-        }
+        this.targetBody = this.potentialTargets[targetObjectName];
+        this.targetObject = targetObjectName;
         console.log(this.targetBody);
-
     }
 }

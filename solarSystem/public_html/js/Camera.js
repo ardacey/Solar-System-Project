@@ -48,9 +48,24 @@ class Camera{
 
         this.position = vec3.fromValues(posX, posY, posZ);
 
-        vec3.normalize(this.front,vec3.sub(this.front,this.target, this.position));
-        vec3.normalize(this.right,vec3.cross(this.right,this.front, this.worldUp));
-        vec3.normalize(this.up,vec3.cross(this.up,this.right, this.front));
+        this.normalizeVectors();
+    }
+
+    updateSpaceShipCameraVectors() {
+        let forward = vec3.normalize(vec3.create(), vec3.sub(vec3.create(), this.target, this.position));
+
+        let behindPosition = vec3.create();
+        vec3.scale(behindPosition, forward, -10);
+
+        this.position = vec3.add(vec3.create(), this.target, behindPosition);
+
+        this.normalizeVectors()
+    }
+
+    normalizeVectors(){
+        vec3.normalize(this.front, vec3.sub(this.front, this.target, this.position));
+        vec3.normalize(this.right, vec3.cross(this.right, this.front, this.worldUp));
+        vec3.normalize(this.up, vec3.cross(this.up, this.right, this.front));
     }
 
     getViewMatrix(){
@@ -90,7 +105,7 @@ class Camera{
 
     processZoom(yoffset){
         this.zoom -= yoffset;
-        if(this.zoom < 1.0) this.zoom = 1.0;
+        if(this.zoom < 0.1) this.zoom = 0.1;
         if(this.zoom > 45.0) this.zoom = 45.0;
     }
 

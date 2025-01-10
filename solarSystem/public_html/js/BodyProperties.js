@@ -1,4 +1,4 @@
-const CelestialBodyProperties = {
+const BodyProperties = {
     Sun: {
         name: "Sun",
         mass: 1.989e30,
@@ -127,5 +127,9 @@ const CelestialBodyProperties = {
         yaw: 0,
         orbitalPeriod: 90460 * 24 * 3600,
         orbitalDistance: 3.6701e12
+    },
+    Spaceship: {
+        name: "Spaceship",
+        mass: 1000,
     }
 };

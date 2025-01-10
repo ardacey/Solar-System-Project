@@ -93,6 +93,12 @@ async function main() {
                 downloadMtlTextures: true,
                 name:"plutoMesh"
             },
+            {
+                obj:"Models/SpaceshipModel/SpaceshipModel.obj",
+                mtl:"Models/SpaceshipModel/SpaceshipModel.mtl",
+                downloadMtlTextures: true,
+                name:"spaceshipMesh"
+            }
         ])
 
         // Create scene objects
@@ -106,75 +112,80 @@ async function main() {
 
         // Create Sun
         const sunMesh = new Mesh(meshMap["sunMesh"],gl);
-
         const sunObject = new SceneObject(sunMesh, sunShader);
-        BindSceneObject(sunObject, StarScript, [CelestialBodyProperties.Sun]);
+        BindSceneObject(sunObject, StarScript, [BodyProperties.Sun]);
         sceneObjects.push(sunObject);
-
         const sunScript = sunObject.SceneObjectScripts.find(script => script instanceof StarScript);
 
         // Create Mercury
         const mercuryMesh = new Mesh(meshMap["mercuryMesh"],gl);
         const mercuryObject = new SceneObject(mercuryMesh, celestialShader);
-        const mercuryScript = BindSceneObject(mercuryObject, PlanetScript, [CelestialBodyProperties.Mercury]);
+        const mercuryScript = BindSceneObject(mercuryObject, PlanetScript, [BodyProperties.Mercury]);
         mercuryScript.centralStar = sunScript;
         sceneObjects.push(mercuryObject);
 
         // Create Venus
         const venusMesh = new Mesh(meshMap["venusMesh"],gl);
         const venusObject = new SceneObject(venusMesh, celestialShader);
-        const venusScript = BindSceneObject(venusObject, PlanetScript, [CelestialBodyProperties.Venus]);
+        const venusScript = BindSceneObject(venusObject, PlanetScript, [BodyProperties.Venus]);
         venusScript.centralStar = sunScript;
         sceneObjects.push(venusObject);
 
         // Create Earth
         const earthMesh = new Mesh(meshMap["earthMesh"],gl);
         const earthObject = new SceneObject(earthMesh, celestialShader);
-        const earthScript = BindSceneObject(earthObject, PlanetScript, [CelestialBodyProperties.Earth]);
+        const earthScript = BindSceneObject(earthObject, PlanetScript, [BodyProperties.Earth]);
         earthScript.centralStar = sunScript;
         sceneObjects.push(earthObject);
 
         // Create Mars
         const marsMesh = new Mesh(meshMap["marsMesh"],gl);
         const marsObject = new SceneObject(marsMesh, celestialShader);
-        const marsScript = BindSceneObject(marsObject, PlanetScript, [CelestialBodyProperties.Mars]);
+        const marsScript = BindSceneObject(marsObject, PlanetScript, [BodyProperties.Mars]);
         marsScript.centralStar = sunScript;
         sceneObjects.push(marsObject);
 
         // Create Jupiter
         const jupiterMesh = new Mesh(meshMap["jupiterMesh"],gl);
         const jupiterObject = new SceneObject(jupiterMesh, celestialShader);
-        const jupiterScript = BindSceneObject(jupiterObject, PlanetScript, [CelestialBodyProperties.Jupiter]);
+        const jupiterScript = BindSceneObject(jupiterObject, PlanetScript, [BodyProperties.Jupiter]);
         jupiterScript.centralStar = sunScript;
         sceneObjects.push(jupiterObject);
 
         // Create Saturn
         const saturnMesh = new Mesh(meshMap["saturnMesh"],gl);
         const saturnObject = new SceneObject(saturnMesh, celestialShader);
-        const saturnScript = BindSceneObject(saturnObject, PlanetScript, [CelestialBodyProperties.Saturn]);
+        const saturnScript = BindSceneObject(saturnObject, PlanetScript, [BodyProperties.Saturn]);
         saturnScript.centralStar = sunScript;
         sceneObjects.push(saturnObject);
 
         // Create Uranus
         const uranusMesh = new Mesh(meshMap["uranusMesh"],gl);
         const uranusObject = new SceneObject(uranusMesh, celestialShader);
-        const uranusScript = BindSceneObject(uranusObject, PlanetScript, [CelestialBodyProperties.Uranus]);
+        const uranusScript = BindSceneObject(uranusObject, PlanetScript, [BodyProperties.Uranus]);
         uranusScript.centralStar = sunScript
         sceneObjects.push(uranusObject);
 
         // Create Neptune
         const neptuneMesh = new Mesh(meshMap["neptuneMesh"],gl);
         const neptuneObject = new SceneObject(neptuneMesh, celestialShader);
-        const neptuneScript = BindSceneObject(neptuneObject, PlanetScript, [CelestialBodyProperties.Neptune]);
+        const neptuneScript = BindSceneObject(neptuneObject, PlanetScript, [BodyProperties.Neptune]);
         neptuneScript.centralStar = sunScript;
         sceneObjects.push(neptuneObject);
 
         // Create Pluto
         const plutoMesh = new Mesh(meshMap["plutoMesh"],gl);
         const plutoObject = new SceneObject(plutoMesh, celestialShader);
-        const plutoScript = BindSceneObject(plutoObject, PlanetScript, [CelestialBodyProperties.Pluto]);
+        const plutoScript = BindSceneObject(plutoObject, PlanetScript, [BodyProperties.Pluto]);
         plutoScript.centralStar = sunScript;
         sceneObjects.push(plutoObject);
+
+        // Create Spaceship
+        const spaceshipMesh = new Mesh(meshMap["spaceshipMesh"],gl);
+        const spaceshipObject = new SceneObject(spaceshipMesh, celestialShader);
+        const spaceshipScript = BindSceneObject(spaceshipObject, SpaceshipScript, [BodyProperties.Spaceship]);
+        spaceshipScript.centralStar = sunScript;
+        sceneObjects.push(spaceshipObject);
 
         //Create CameraFollower
         const cameraObject = SceneObject.CreateEmptySceneObject();
@@ -189,6 +200,7 @@ async function main() {
             uranus:uranusObject,
             neptune:neptuneObject,
             pluto:plutoObject,
+            spaceship:spaceshipObject,
         }]);
         sceneObjects.push(cameraObject);
 
@@ -226,10 +238,12 @@ async function main() {
         }
 
 
-
         pointerLockEvents();
         function pointerLockEvents() {
+            const spaceshipScript = scene.getInstancesOf(SpaceshipScript)[0];
             document.addEventListener('keydown', (event) => {
+                const rotationSpeed = 2;
+
                 if (event.key === 'p') {
                     if (!document.pointerLockElement) {
                         canvas.requestPointerLock({
@@ -237,7 +251,49 @@ async function main() {
                         });
                     }
                 }
+                if (document.pointerLockElement && targetBody === "Spaceship") {
+                    switch (event.key) {
+                        case 'w':
+                            spaceshipScript.speedUp();
+                            break;
+                        case 'ArrowLeft':
+                            spaceshipScript.rotateLeft(rotationSpeed);
+                            break;
+                        case 'ArrowRight':
+                            spaceshipScript.rotateRight(rotationSpeed);
+                            break;
+                        case 'ArrowUp':
+                            spaceshipScript.rotateUp(rotationSpeed);
+                            break;
+                        case 'ArrowDown':
+                            spaceshipScript.rotateDown(rotationSpeed);
+                            break;
+                    }
+                }
             });
+
+            document.addEventListener('keyup', (event) => {
+
+                if (document.pointerLockElement && targetBody === "Spaceship") {
+                    switch (event.key) {
+                        case 'w':
+                            spaceshipScript.speedDown()
+                            break;
+                        case 'ArrowLeft':
+                            spaceshipScript.rotateRight(0);
+                            break;
+                        case 'ArrowRight':
+                            spaceshipScript.rotateLeft(0);
+                            break;
+                        case 'ArrowUp':
+                            spaceshipScript.rotateUp(0);
+                            break;
+                        case 'ArrowDown':
+                            spaceshipScript.rotateDown(0);
+                    }
+                }
+            });
+
             document.addEventListener('pointerlockchange', () => {
                 if (document.pointerLockElement === canvas) {
                     document.addEventListener('mousemove', updateMouseMovement);
@@ -274,6 +330,7 @@ async function main() {
             const centerUranus = document.getElementById("centerUranus");
             const centerNeptune = document.getElementById("centerNeptune");
             const centerPluto = document.getElementById("centerPluto");
+            const centerSpaceship = document.getElementById("centerSpaceship");
 
             const cameraHandler = scene.getInstancesOf(CameraFollowerScript)[0];
 
@@ -316,6 +373,10 @@ async function main() {
             centerPluto?.addEventListener("click", () => {
                 cameraHandler.lockCamera("pluto")
                 targetBody = "Pluto";
+            })
+            centerSpaceship?.addEventListener("click", () => {
+                cameraHandler.lockCamera("spaceship")
+                targetBody = "Spaceship";
             })
         }
     }
@@ -383,7 +444,7 @@ async function main() {
 
         scene.Update();
 
-        updateInfoBox(targetBody)
+        if(targetBody !== "Spaceship") updateInfoBox(targetBody)
 
         requestAnimationFrame(render);
     }
