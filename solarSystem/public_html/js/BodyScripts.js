@@ -432,23 +432,27 @@ class SpaceshipScript extends SceneObjectScript {
             const spaceshipPosition = this.sceneObject.transform.position;
             const spaceshipRadius = this.sceneObject.transform.scale[0];
 
+            const objectPosition = object.transform.position;
+            const objectRadius = object.transform.scale[0];
+
+            const distance = vec3.distance(objectPosition, spaceshipPosition);
+
             if(object.SceneObjectScripts[0] instanceof AsteroidScript) {
-                const asteroidPosition = object.transform.position;
-                const asteroidRadius = object.transform.scale[0];
-                const distance = vec3.distance(asteroidPosition, spaceshipPosition);
-                if (distance < asteroidRadius + spaceshipRadius) {
+                if (distance < objectRadius + spaceshipRadius) {
                     console.log("Collision detected with Asteroid Object");
                     this.sceneObject.scene.listOfSceneObjects.splice(this.sceneObject.scene.listOfSceneObjects.indexOf(object), 1);
                 }
-            } /*else if (object.SceneObjectScripts[0] instanceof CelestialBodyScript) {
-                const celestialPosition = object.transform.position;
-                const celestialRadius = object.transform.scale[0];
-                const distance = vec3.distance(celestialPosition, spaceshipPosition);
-                if (distance < celestialRadius + spaceshipRadius) {
-                    console.log("Collision detected with Celestial Object");
-                    // this.stop();
+            } else if (object.SceneObjectScripts[0] instanceof StarScript) {
+                if (distance < (objectRadius + spaceshipRadius) / 2) {
+                    console.log("Collision detected with Star Object");
+                    this.sceneObject.scene.listOfSceneObjects.splice(this.sceneObject.scene.listOfSceneObjects.indexOf(this.sceneObject), 1);
                 }
-            }*/ // Not Working as Expected (Collision yarıçapı çok büyük, çarpmaya yakın olmasa bile çalışıyor)
+            } else if (object.SceneObjectScripts[0] instanceof CelestialBodyScript) {
+                if (distance < (objectRadius + spaceshipRadius) / 2) { // çap yarıçap farkı belki?
+                    console.log("Collision detected with Celestial Object");
+                    this.stop();
+                }
+            }
         });
     }
 
@@ -466,13 +470,13 @@ class SpaceshipScript extends SceneObjectScript {
 
 class AsteroidScript extends SceneObjectScript{
     direction;
-    velocity;
+    speed;
 
     constructor(sceneObject, params) {
         super(sceneObject);
         Object.assign(this, params);
         this.direction = vec3.fromValues(0, 0, 1);
-        this.velocity = vec3.fromValues(0, 0, 0);
+        this.speed = 0;
     }
 
     Start() {
@@ -482,6 +486,15 @@ class AsteroidScript extends SceneObjectScript{
 
     Update() {
         super.Update();
+    }
+
+    UpdateTransform() {
+        const transform = this.sceneObject.transform;
+        transform.position = vec3.add(
+            transform.position,
+            transform.position,
+            vec3.scale(vec3.create(), this.direction, this.speed * time.deltaTime)
+        );
     }
 }
 
