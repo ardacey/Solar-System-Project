@@ -11,8 +11,45 @@ function clearGlBuffer(gl){
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 }
 
-main();
+class OrbitMesh {
+    constructor(gl, orbitalDistance, color = [0.0, 1.0, 1.0], segments = 360) {
+        this.gl = gl;
+        this.color = color;
+        
+        const vertices = [];
+        for (let i = 0; i <= segments; i++) {
+            const angle = (i / segments) * Math.PI * 2;
+            const x = Math.cos(angle) * orbitalDistance * CelestialBodyScript.DISTANCE_SCALE;
+            const z = Math.sin(angle) * orbitalDistance * CelestialBodyScript.DISTANCE_SCALE;
+            vertices.push(x, 0, z);
+        }
+        
+        const indices = [];
+        for (let i = 0; i < segments; i++) {
+            indices.push(i, i + 1);
+        }
+        indices.push(segments, 0); // Close the loop
+        
+        this.bufferInfo = twgl.createBufferInfoFromArrays(gl, {
+            aPos: { numComponents: 3, data: new Float32Array(vertices) },
+            indices: { numComponents: 2, data: new Uint16Array(indices) }
+        });
+    }
+    
+    draw(shader) {
+        const gl = this.gl;
+        shader.useProgram();
+        twgl.setBuffersAndAttributes(gl, shader.programInfo, this.bufferInfo);
+        shader.setUniform3FVector("orbitColor", this.color);
+        gl.drawElements(gl.LINES, this.bufferInfo.numElements, gl.UNSIGNED_SHORT, 0);
+    }
+    
+    setupMesh() {
+        // Empty
+    }
+}
 
+main();
 
 async function main() {
     const canvas = document.querySelector("#glCanvas");
@@ -30,6 +67,7 @@ async function main() {
         const celestialShader = await initShader("glsl/SunVertex.glsl", "glsl/SunFragment.glsl", gl);
         const sunShader = await initShader("glsl/test2vertex.glsl", "glsl/test2frag.glsl", gl);
         const skyboxShader = await initShader("glsl/skybox-vertex.glsl", "glsl/skybox-fragment.glsl", gl);
+        const orbitShader = await initShader("glsl/orbitVertex.glsl", "glsl/orbitFragment.glsl", gl);
         shapeShader = await initShader("glsl/ShapeVertex.glsl", "glsl/ShapeFragment.glsl", gl)
 
         let meshMap = await OBJ.downloadModels([
@@ -129,6 +167,11 @@ async function main() {
         const mercuryScript = BindSceneObject(mercuryObject, PlanetScript, [BodyProperties.Mercury]);
         mercuryScript.centralStar = sunScript;
         sceneObjects.push(mercuryObject);
+        
+        // Mercury's orbit
+        const mercuryOrbitMesh = new OrbitMesh(gl, BodyProperties.Mercury.orbitalDistance, [0.7, 0.5, 0.5]);
+        const mercuryOrbitObject = new SceneObject(mercuryOrbitMesh, orbitShader);
+        sceneObjects.push(mercuryOrbitObject);
 
         // Create Venus
         const venusMesh = new Mesh(meshMap["venusMesh"],gl);
@@ -137,12 +180,22 @@ async function main() {
         venusScript.centralStar = sunScript;
         sceneObjects.push(venusObject);
 
+        // Create Venus's orbit (yellowish)
+        const venusOrbitMesh = new OrbitMesh(gl, BodyProperties.Venus.orbitalDistance, [0.9, 0.9, 0.5]);
+        const venusOrbitObject = new SceneObject(venusOrbitMesh, orbitShader);
+        sceneObjects.push(venusOrbitObject);
+
         // Create Earth
         const earthMesh = new Mesh(meshMap["earthMesh"],gl);
         const earthObject = new SceneObject(earthMesh, celestialShader);
         const earthScript = BindSceneObject(earthObject, PlanetScript, [BodyProperties.Earth]);
         earthScript.centralStar = sunScript;
         sceneObjects.push(earthObject);
+
+        // Create Earth's orbit (blue)
+        const earthOrbitMesh = new OrbitMesh(gl, BodyProperties.Earth.orbitalDistance, [0.2, 0.5, 1.0]);
+        const earthOrbitObject = new SceneObject(earthOrbitMesh, orbitShader);
+        sceneObjects.push(earthOrbitObject);
 
         // Create Mars
         const marsMesh = new Mesh(meshMap["marsMesh"],gl);
@@ -151,12 +204,22 @@ async function main() {
         marsScript.centralStar = sunScript;
         sceneObjects.push(marsObject);
 
+        // Create Mars's orbit (red-orange)
+        const marsOrbitMesh = new OrbitMesh(gl, BodyProperties.Mars.orbitalDistance, [1.0, 0.4, 0.2]);
+        const marsOrbitObject = new SceneObject(marsOrbitMesh, orbitShader);
+        sceneObjects.push(marsOrbitObject);
+
         // Create Jupiter
         const jupiterMesh = new Mesh(meshMap["jupiterMesh"],gl);
         const jupiterObject = new SceneObject(jupiterMesh, celestialShader);
         const jupiterScript = BindSceneObject(jupiterObject, PlanetScript, [BodyProperties.Jupiter]);
         jupiterScript.centralStar = sunScript;
         sceneObjects.push(jupiterObject);
+
+        // Create Jupiter's orbit (brown-orange)
+        const jupiterOrbitMesh = new OrbitMesh(gl, BodyProperties.Jupiter.orbitalDistance, [0.8, 0.6, 0.3]);
+        const jupiterOrbitObject = new SceneObject(jupiterOrbitMesh, orbitShader);
+        sceneObjects.push(jupiterOrbitObject);
 
         // Create Saturn
         const saturnMesh = new Mesh(meshMap["saturnMesh"],gl);
@@ -165,12 +228,22 @@ async function main() {
         saturnScript.centralStar = sunScript;
         sceneObjects.push(saturnObject);
 
+        // Create Saturn's orbit (golden)
+        const saturnOrbitMesh = new OrbitMesh(gl, BodyProperties.Saturn.orbitalDistance, [0.9, 0.8, 0.4]);
+        const saturnOrbitObject = new SceneObject(saturnOrbitMesh, orbitShader);
+        sceneObjects.push(saturnOrbitObject);
+
         // Create Uranus
         const uranusMesh = new Mesh(meshMap["uranusMesh"],gl);
         const uranusObject = new SceneObject(uranusMesh, celestialShader);
         const uranusScript = BindSceneObject(uranusObject, PlanetScript, [BodyProperties.Uranus]);
-        uranusScript.centralStar = sunScript
+        uranusScript.centralStar = sunScript;
         sceneObjects.push(uranusObject);
+
+        // Create Uranus's orbit (light blue)
+        const uranusOrbitMesh = new OrbitMesh(gl, BodyProperties.Uranus.orbitalDistance, [0.5, 0.8, 0.9]);
+        const uranusOrbitObject = new SceneObject(uranusOrbitMesh, orbitShader);
+        sceneObjects.push(uranusOrbitObject);
 
         // Create Neptune
         const neptuneMesh = new Mesh(meshMap["neptuneMesh"],gl);
@@ -179,12 +252,22 @@ async function main() {
         neptuneScript.centralStar = sunScript;
         sceneObjects.push(neptuneObject);
 
+        // Create Neptune's orbit (deep blue)
+        const neptuneOrbitMesh = new OrbitMesh(gl, BodyProperties.Neptune.orbitalDistance, [0.1, 0.2, 0.8]);
+        const neptuneOrbitObject = new SceneObject(neptuneOrbitMesh, orbitShader);
+        sceneObjects.push(neptuneOrbitObject);
+
         // Create Pluto
         const plutoMesh = new Mesh(meshMap["plutoMesh"],gl);
         const plutoObject = new SceneObject(plutoMesh, celestialShader);
         const plutoScript = BindSceneObject(plutoObject, PlanetScript, [BodyProperties.Pluto]);
         plutoScript.centralStar = sunScript;
         sceneObjects.push(plutoObject);
+
+        // Create Pluto's orbit (purple-gray)
+        const plutoOrbitMesh = new OrbitMesh(gl, BodyProperties.Pluto.orbitalDistance, [0.6, 0.4, 0.6]);
+        const plutoOrbitObject = new SceneObject(plutoOrbitMesh, orbitShader);
+        sceneObjects.push(plutoOrbitObject);
 
         // Create Spaceship
         const spaceshipMesh = new Mesh(meshMap["spaceshipMesh"],gl);
@@ -223,10 +306,7 @@ async function main() {
     }
 
     const scene = await setupScene();
-
-
-
-
+    
     eventHandlers();
     function eventHandlers() {
         let activeButton = null;
