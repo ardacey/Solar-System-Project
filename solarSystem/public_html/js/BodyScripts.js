@@ -441,6 +441,8 @@ class SpaceshipScript extends SceneObjectScript {
                 if (distance < objectRadius + spaceshipRadius) {
                     console.log("Collision detected with Asteroid Object");
                     this.sceneObject.scene.listOfSceneObjects.splice(this.sceneObject.scene.listOfSceneObjects.indexOf(object), 1);
+                    asteroidCount--;
+                    score += 50;
                 }
             } else if (object.SceneObjectScripts[0] instanceof StarScript) {
                 if (distance < (objectRadius + spaceshipRadius) / 2) {
@@ -448,7 +450,11 @@ class SpaceshipScript extends SceneObjectScript {
                     this.sceneObject.scene.listOfSceneObjects.splice(this.sceneObject.scene.listOfSceneObjects.indexOf(this.sceneObject), 1);
                 }
             } else if (object.SceneObjectScripts[0] instanceof CelestialBodyScript) {
-                if (distance < (objectRadius + spaceshipRadius) / 2) { // çap yarıçap farkı belki?
+                if (object.SceneObjectScripts[0].name === "Earth") {
+                    totalScore += score;
+                    score = 0;
+                }
+                if (distance < (objectRadius + spaceshipRadius) / 2) {
                     console.log("Collision detected with Celestial Object");
                     this.stop();
                 }
@@ -475,17 +481,26 @@ class AsteroidScript extends SceneObjectScript{
     constructor(sceneObject, params) {
         super(sceneObject);
         Object.assign(this, params);
-        this.direction = vec3.fromValues(0, 0, 1);
-        this.speed = 0;
+        this.direction = vec3.fromValues(
+            Math.random() * 2 - 1,
+            Math.random() * 2 - 1,
+            Math.random() * 2 - 1
+        );
+        this.speed = 0.1;
     }
 
     Start() {
         super.Start();
-        this.sceneObject.transform.position = vec3.fromValues(100, 50, 50);
+        this.sceneObject.transform.position = vec3.fromValues(
+            Math.random() * 500 - 250,
+            Math.random() * 500 - 250,
+            Math.random() * 500 - 250
+        );
     }
 
     Update() {
         super.Update();
+        this.UpdateTransform();
     }
 
     UpdateTransform() {

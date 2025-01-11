@@ -1,7 +1,18 @@
 "use strict";
 
 let shapeShader;
+let celestialShader;
+let meshMap;
+const sceneObjects = [];
 let targetBody = "Sun";
+
+let lastAsteroidTime = 0;
+const asteroidSpawnInterval = 5000;
+const maxAsteroids = 50;
+let asteroidCount = 0;
+
+let score = 0;
+let totalScore = 0;
 
 function clearGlBuffer(gl){
     gl.clearColor(0.0,0.0,0.0,1.0);
@@ -27,12 +38,12 @@ async function main() {
 
     async function setupScene() {
         // Initialize shaders
-        const celestialShader = await initShader("glsl/SunVertex.glsl", "glsl/SunFragment.glsl", gl);
+        celestialShader = await initShader("glsl/SunVertex.glsl", "glsl/SunFragment.glsl", gl);
         const sunShader = await initShader("glsl/test2vertex.glsl", "glsl/test2frag.glsl", gl);
         const skyboxShader = await initShader("glsl/skybox-vertex.glsl", "glsl/skybox-fragment.glsl", gl);
         shapeShader = await initShader("glsl/ShapeVertex.glsl", "glsl/ShapeFragment.glsl", gl)
 
-        let meshMap = await OBJ.downloadModels([
+        meshMap = await OBJ.downloadModels([
             {
                 obj:"Models/SunModel/SunModel.obj",
                 mtl:"Models/SunModel/SunModel.mtl",
@@ -106,9 +117,6 @@ async function main() {
                 name:"asteroidMesh"
             }
         ])
-
-        // Create scene objects
-        const sceneObjects = [];
 
         // Create skybox
         const skyboxObject = SceneObject.CreateEmptySceneObject();
@@ -193,12 +201,7 @@ async function main() {
         spaceshipScript.centralStar = sunScript;
         sceneObjects.push(spaceshipObject);
 
-        // Create Asteroid
-        const asteroidMesh = new Mesh(meshMap["asteroidMesh"],gl);
-        const asteroidObject = new SceneObject(asteroidMesh, celestialShader);
-        const asteroidScript = BindSceneObject(asteroidObject, AsteroidScript)
-        asteroidScript.centralStar = sunScript;
-        sceneObjects.push(asteroidObject);
+        for(let i = 0; i < 25; i++) createAsteroid();
 
         //Create CameraFollower
         const cameraObject = SceneObject.CreateEmptySceneObject();
@@ -420,6 +423,28 @@ async function main() {
                 `;
     }
 
+    function updateScore() {
+        const scoreContent = document.getElementById("score");
+
+        scoreContent.innerHTML = `
+                <strong>Money on Ship:</strong> ${score.toFixed(2)} <strong>TL</strong><br>
+                <strong>Total Money:</strong> ${totalScore.toFixed(2)} <strong>TL</strong><br>
+                `;
+    }
+
+    function createAsteroid() {
+        if (asteroidCount >= maxAsteroids) return;
+
+        const asteroidMesh = new Mesh(meshMap["asteroidMesh"],gl);
+        const asteroidObject = new SceneObject(asteroidMesh, celestialShader);
+        BindSceneObject(asteroidObject, AsteroidScript);
+        sceneObjects.push(asteroidObject);
+
+        dispatchEvent(asteroidObject.startEvents);
+
+        asteroidCount++;
+    }
+
     function resizeCanvasToDisplaySize() {
         const displayWidth = window.innerWidth;
         const displayHeight = window.innerHeight;
@@ -443,7 +468,13 @@ async function main() {
 
         scene.Update();
 
+        if (timeStamp - lastAsteroidTime >= asteroidSpawnInterval) {
+            createAsteroid();
+            lastAsteroidTime = timeStamp;
+        }
+
         if(targetBody !== "Spaceship") updateInfoBox(targetBody)
+        updateScore();
 
         requestAnimationFrame(render);
     }

@@ -14,7 +14,7 @@ const BodyProperties = {
     Mercury: {
         name: "Mercury",
         mass: 3.301e23,
-        radius: 2439700,
+        radius: 24397000,
         surfaceTemperature: 216,
         angularVelocity: 1.238e-6,
         rotationPeriod: 59.969 * 24 * 3600,
@@ -27,7 +27,7 @@ const BodyProperties = {
     Venus: {
         name: "Venus",
         mass: 4.869e24,
-        radius: 6051800,
+        radius: 60518000,
         surfaceTemperature: 738,
         angularVelocity: 3.232e-07,
         rotationPeriod: 243 * 24 * 3600,
@@ -40,7 +40,7 @@ const BodyProperties = {
     Earth: {
         name: "Earth",
         mass: 5.972e24,
-        radius: 6371000,
+        radius: 63710000,
         surfaceTemperature: 288,
         angularVelocity: 7.2921159e-5,
         rotationPeriod: 24 * 3600,
@@ -53,7 +53,7 @@ const BodyProperties = {
     Mars: {
         name: "Mars",
         mass: 6.4185e23,
-        radius: 3396200,
+        radius: 33962000,
         surfaceTemperature: 208,
         angularVelocity: 7.088e-5,
         rotationPeriod: 1.025 * 24 * 3600,
@@ -66,7 +66,7 @@ const BodyProperties = {
     Jupiter: {
         name: "Jupiter",
         mass: 1.898e27,
-        radius: 69911000,
+        radius: 699110000,
         surfaceTemperature: 163,
         angularVelocity: 1.759e-4,
         rotationPeriod: 0.413 * 24 * 3600,
@@ -79,7 +79,7 @@ const BodyProperties = {
     Saturn: {
         name: "Saturn",
         mass: 5.683e26,
-        radius: 58232000,
+        radius: 582320000,
         surfaceTemperature: 95,
         angularVelocity: 1.654e-4,
         rotationPeriod: 0.413 * 24 * 3600,
@@ -92,7 +92,7 @@ const BodyProperties = {
     Uranus: {
         name: "Uranus",
         mass: 8.681e25,
-        radius: 25362000,
+        radius: 253620000,
         surfaceTemperature: 78,
         angularVelocity: 1.026e-4,
         rotationPeriod: 0.729 * 24 * 3600,
@@ -105,7 +105,7 @@ const BodyProperties = {
     Neptune: {
         name: "Neptune",
         mass: 1.024e26,
-        radius: 24622000,
+        radius: 246220000,
         surfaceTemperature: 59,
         angularVelocity: 1.085e-4,
         rotationPeriod: 0.67125 * 24 * 3600,
@@ -118,7 +118,7 @@ const BodyProperties = {
     Pluto: {
         name: "Pluto",
         mass: 1.303e22,
-        radius: 1188000,
+        radius: 11880000,
         surfaceTemperature: 41,
         angularVelocity: 1.137e-5,
         rotationPeriod: 6.387 * 24 * 3600,
