@@ -27,11 +27,11 @@ out vec4 FragColor;
 
 void main() {
     vec3 viewDirAtm = normalize(viewPos - vPosition);
-    float viewAngle = dot(Normal, viewPos);
-    float alpha = smoothstep(3., 1.0, viewAngle);
+    float viewAngle = 3.7 - abs(dot(Normal, viewPos));
+    float alpha =  smoothstep(3., 0., viewAngle);
 
 
-    vec3 atmosphereColor = vec3(0.0, 0.4, 1.0);
+    vec3 atmosphereColor = vec3(0.929, 0.204, 0.016);
     FragColor = vec4(atmosphereColor, alpha);
 
 

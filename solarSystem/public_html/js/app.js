@@ -117,7 +117,7 @@ async function main() {
         gl.enable(gl.BLEND);
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
         gl.enable(gl.CULL_FACE);
-        gl.cullFace(gl.BACK);
+        gl.cullFace(gl.FRONT);
         const haloMesh = new Mesh(meshMap["sunMesh"],gl);
         const haloObject = new SceneObject(haloMesh, haloShader);
 
