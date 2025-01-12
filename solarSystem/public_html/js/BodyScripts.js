@@ -357,7 +357,6 @@ class SpaceshipScript extends SceneObjectScript {
     mass;
     speed;
     direction;
-    angle;
 
     constructor(sceneObject, params) {
         super(sceneObject);
@@ -365,7 +364,6 @@ class SpaceshipScript extends SceneObjectScript {
         this.speed = 0;
         this.direction = vec3.fromValues(0, 0, 1);
         this.rotation = { x: 0, y: 0, z: 0 };
-        this.angle = { x: 0, y: 0 };
     }
 
     Start() {
@@ -437,35 +435,45 @@ class SpaceshipScript extends SceneObjectScript {
 
             const distance = vec3.distance(objectPosition, spaceshipPosition);
 
-            if(object.SceneObjectScripts[0] instanceof AsteroidScript) {
+            if (object.SceneObjectScripts[0] instanceof AsteroidScript) {
                 if (distance < objectRadius + spaceshipRadius) {
-                    console.log("Collision detected with Asteroid Object");
+                    console.log("Collision detected with Asteroid");
                     this.sceneObject.scene.listOfSceneObjects.splice(this.sceneObject.scene.listOfSceneObjects.indexOf(object), 1);
                     asteroidCount--;
                     score += 50;
                 }
+            }  else if (object.SceneObjectScripts[0] instanceof AstronautScript) {
+                if (distance < objectRadius + spaceshipRadius) {
+                    console.log("Collision detected with Astronaut");
+                    if (object.Mesh.meshOBJ.name === "ardaMesh") arda = 1;
+                    else if (object.Mesh.meshOBJ.name === "ismailMesh") ismail = 1;
+                    else if (object.Mesh.meshOBJ.name === "yigitalpMesh") yigitalp = 1;
+                    else if (object.Mesh.meshOBJ.name === "zaferMesh") zafer = 1;
+                    this.sceneObject.scene.listOfSceneObjects.splice(this.sceneObject.scene.listOfSceneObjects.indexOf(object), 1);
+                }
             } else if (object.SceneObjectScripts[0] instanceof StarScript) {
                 if (distance < (objectRadius + spaceshipRadius) / 2) {
-                    console.log("Collision detected with Star Object");
+                    console.log("Collision detected with Star");
                     this.sceneObject.scene.listOfSceneObjects.splice(this.sceneObject.scene.listOfSceneObjects.indexOf(this.sceneObject), 1);
                 }
             } else if (object.SceneObjectScripts[0] instanceof CelestialBodyScript) {
-                if (object.SceneObjectScripts[0].name === "Earth") {
-                    totalScore += score;
-                    score = 0;
-                }
                 if (distance < (objectRadius + spaceshipRadius) / 2) {
-                    console.log("Collision detected with Celestial Object");
-                    this.stop();
+                    if (object.SceneObjectScripts[0].name === "Earth") {
+                        totalScore += score;
+                        score = 0;
+                        if (arda) arda = 2;
+                        if (ismail) ismail = 2;
+                        if (yigitalp) yigitalp = 2;
+                        if (zafer) zafer = 2;
+                    } else {
+                        console.log("Collision detected with Celestial Body");
+                        this.stop();
+                    }
                 }
             }
         });
     }
 
-    rotateLeft(angle) {this.angle.y = angle;}
-    rotateRight(angle) {this.angle.y = -angle;}
-    rotateUp(angle) {this.angle.x = -angle;}
-    rotateDown(angle) {this.angle.x = angle;}
     moveFront() {this.speed = 0.5; this.direction = this.sceneObject.scene.camera.front;}
     moveBack(){this.speed = -0.5; this.direction = this.sceneObject.scene.camera.front;}
     moveRight(){this.speed = 0.5; this.direction = this.sceneObject.scene.camera.right;}
@@ -510,6 +518,26 @@ class AsteroidScript extends SceneObjectScript{
             transform.position,
             vec3.scale(vec3.create(), this.direction, this.speed * time.deltaTime)
         );
+    }
+}
+
+class AstronautScript extends SceneObjectScript{
+    constructor(sceneObject, params) {
+        super(sceneObject);
+        Object.assign(this, params);
+    }
+
+    Start() {
+        super.Start();
+        if (this.sceneObject.Mesh.meshOBJ.name === "ardaMesh") {
+            this.sceneObject.transform.position = vec3.fromValues(100,100,100);
+        } else if (this.sceneObject.Mesh.meshOBJ.name === "ismailMesh") {
+            this.sceneObject.transform.position = vec3.fromValues(100,200,200);
+        } else if (this.sceneObject.Mesh.meshOBJ.name === "yigitalpMesh") {
+            this.sceneObject.transform.position = vec3.fromValues(200,200,300);
+        } else if (this.sceneObject.Mesh.meshOBJ.name === "zaferMesh") {
+            this.sceneObject.transform.position = vec3.fromValues(300,400,200);
+        }
     }
 }
 

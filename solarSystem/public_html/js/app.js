@@ -14,6 +14,11 @@ let asteroidCount = 0;
 let score = 0;
 let totalScore = 0;
 
+let arda = 0;
+let ismail = 0;
+let yigitalp = 0;
+let zafer = 0;
+
 function clearGlBuffer(gl){
     gl.clearColor(0.0,0.0,0.0,1.0);
     gl.clearDepth(1.0);
@@ -141,6 +146,30 @@ async function main() {
                 mtl:"Models/PlutoModel/PlutoModel.mtl",
                 downloadMtlTextures: true,
                 name:"plutoMesh"
+            },
+            {
+                obj:"Models/ArdaModel/ArdaModel.obj",
+                mtl:"Models/ArdaModel/ArdaModel.mtl",
+                downloadMtlTextures: true,
+                name:"ardaMesh"
+            },
+            {
+                obj:"Models/IsmailModel/IsmailModel.obj",
+                mtl:"Models/IsmailModel/IsmailModel.mtl",
+                downloadMtlTextures: true,
+                name:"ismailMesh"
+            },
+            {
+                obj:"Models/YigitalpModel/YigitalpModel.obj",
+                mtl:"Models/YigitalpModel/YigitalpModel.mtl",
+                downloadMtlTextures: true,
+                name:"yigitalpMesh"
+            },
+            {
+                obj:"Models/ZaferModel/ZaferModel.obj",
+                mtl:"Models/ZaferModel/ZaferModel.mtl",
+                downloadMtlTextures: true,
+                name:"zaferMesh"
             },
             {
                 obj:"Models/SpaceshipModel/SpaceshipModel.obj",
@@ -277,6 +306,30 @@ async function main() {
         const plutoOrbitObject = new SceneObject(plutoOrbitMesh, orbitShader);
         sceneObjects.push(plutoOrbitObject);
 
+        // Create Arda
+        const ardaMesh = new Mesh(meshMap["ardaMesh"],gl);
+        const ardaObject = new SceneObject(ardaMesh, celestialShader);
+        BindSceneObject(ardaObject, AstronautScript);
+        sceneObjects.push(ardaObject);
+
+        // Create Ismail
+        const ismailMesh = new Mesh(meshMap["ismailMesh"],gl);
+        const ismailObject = new SceneObject(ismailMesh, celestialShader);
+        BindSceneObject(ismailObject, AstronautScript);
+        sceneObjects.push(ismailObject);
+
+        // Create Yigitalp
+        const yigitalpMesh = new Mesh(meshMap["yigitalpMesh"],gl);
+        const yigitalpObject = new SceneObject(yigitalpMesh, celestialShader);
+        BindSceneObject(yigitalpObject, AstronautScript);
+        sceneObjects.push(yigitalpObject);
+
+        // Create Zafer
+        const zaferMesh = new Mesh(meshMap["zaferMesh"],gl);
+        const zaferObject = new SceneObject(zaferMesh, celestialShader);
+        BindSceneObject(zaferObject, AstronautScript);
+        sceneObjects.push(zaferObject);
+
         // Create Spaceship
         const spaceshipMesh = new Mesh(meshMap["spaceshipMesh"],gl);
         const spaceshipObject = new SceneObject(spaceshipMesh, celestialShader);
@@ -299,6 +352,10 @@ async function main() {
             uranus:uranusObject,
             neptune:neptuneObject,
             pluto:plutoObject,
+            arda:ardaObject,
+            ismail:ismailObject,
+            yigitalp:yigitalpObject,
+            zafer:zaferObject,
             spaceship:spaceshipObject,
         }]);
         sceneObjects.push(cameraObject);
@@ -361,9 +418,6 @@ async function main() {
                         case 'a':
                             spaceshipScript.moveLeft();
                             break;
-                        case 'ArrowDown':
-                            spaceshipScript.rotateDown(rotationSpeed);
-                            break;
                     }
                 }
             });
@@ -412,6 +466,10 @@ async function main() {
             const centerUranus = document.getElementById("centerUranus");
             const centerNeptune = document.getElementById("centerNeptune");
             const centerPluto = document.getElementById("centerPluto");
+            const centerArda = document.getElementById("centerArda");
+            const centerIsmail = document.getElementById("centerIsmail");
+            const centerYigitalp = document.getElementById("centerYigitalp");
+            const centerZafer = document.getElementById("centerZafer");
             const centerSpaceship = document.getElementById("centerSpaceship");
 
             const cameraHandler = scene.getInstancesOf(CameraFollowerScript)[0];
@@ -455,6 +513,22 @@ async function main() {
             centerPluto?.addEventListener("click", () => {
                 cameraHandler.lockCamera("pluto")
                 targetBody = "Pluto";
+            })
+            centerArda?.addEventListener("click", () => {
+                cameraHandler.lockCamera("arda")
+                targetBody = "Arda";
+            })
+            centerIsmail?.addEventListener("click", () => {
+                cameraHandler.lockCamera("ismail")
+                targetBody = "Ismail";
+            })
+            centerYigitalp?.addEventListener("click", () => {
+                cameraHandler.lockCamera("yigitalp")
+                targetBody = "Yigitalp";
+            })
+            centerZafer?.addEventListener("click", () => {
+                cameraHandler.lockCamera("zafer")
+                targetBody = "Zafer";
             })
             centerSpaceship?.addEventListener("click", () => {
                 cameraHandler.lockCamera("spaceship")
@@ -512,6 +586,28 @@ async function main() {
                 `;
     }
 
+    function updateAstronauts() {
+        const astronauts = document.getElementById("astronauts");
+
+        const statusMap = {
+            0: "Not Rescued",
+            1: "On the Ship",
+            2: "Rescued"
+        };
+
+        const ardaStatus = statusMap[arda] || "Unknown Status";
+        const ismailStatus = statusMap[ismail] || "Unknown Status";
+        const yigitalpStatus = statusMap[yigitalp] || "Unknown Status";
+        const zaferStatus = statusMap[zafer] || "Unknown Status";
+
+        astronauts.innerHTML = `
+                <strong>Arda: </strong> ${ardaStatus} <br>
+                <strong>Ismail: </strong> ${ismailStatus} <br>
+                <strong>Yigitalp: </strong> ${yigitalpStatus} <br>
+                <strong>Zafer: </strong> ${zaferStatus} <br>
+                `;
+    }
+
     function createAsteroid() {
         if (asteroidCount >= maxAsteroids) return;
 
@@ -553,8 +649,14 @@ async function main() {
             lastAsteroidTime = timeStamp;
         }
 
-        if(targetBody !== "Spaceship") updateInfoBox(targetBody)
+        if(
+            targetBody !== "Spaceship" &&
+            targetBody !== "Arda" &&
+            targetBody !== "Ismail" &&
+            targetBody !== "Yigitalp" &&
+            targetBody !== "Zafer") updateInfoBox(targetBody)
         updateScore();
+        updateAstronauts();
 
         requestAnimationFrame(render);
     }

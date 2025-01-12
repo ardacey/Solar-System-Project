@@ -1,0 +1,32 @@
+newmtl mat0
+Ns 0
+Ka 1.0 1.0 1.0
+Kd 0.58431 0.58431 0.58431
+Ks 0.5 0.5 0.5
+Ke 0.0 0.0 0.0
+Ni 1.0
+d 1
+illum 2
+map_Kd astnt1_1.png
+
+newmtl mat1
+Ns 269.4118
+Ka 1.0 1.0 1.0
+Kd 0.58431 0.58431 0.58431
+Ks 0.5 0.5 0.5
+Ke 0.0 0.0 0.0
+Ni 1.0
+d 1
+illum 2
+map_Kd astnt1_2.png
+
+newmtl mat2
+Ns 250
+Ka 1.0 1.0 1.0
+Kd 0.85 0.85 0.85
+Ks 0 0 0
+Ke 0.0 0.0 0.0
+Ni 1.0
+d 1
+illum 1
+
