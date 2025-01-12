@@ -535,6 +535,20 @@ async function main() {
                 targetBody = "Spaceship";
             })
         }
+        
+        let isHelpMenuVisible = false;
+
+        function setupKeyboardShortcuts() {
+            document.addEventListener('keydown', (event) => {
+                if (!document.pointerLockElement && event.key === 'h') {
+                    isHelpMenuVisible = !isHelpMenuVisible;
+                    const helpMenu = document.getElementById('helpMenu');
+                    helpMenu.style.display = isHelpMenuVisible ? 'block' : 'none';
+                }
+            });
+        }
+
+        setupKeyboardShortcuts();
     }
 
     function updateInfoBox(target) {

@@ -34,9 +34,39 @@
       width: 100vw; /* Ensure it spans the full viewport width */
       height: 100vh; /* Ensure it spans the full viewport height */
     }
+    
+    #helpMenu {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+      font-family: Arial, sans-serif;
+      z-index: 1000;
+      display: none;
+      max-width: 600px;
+      width: 80%;
+    }
+    
+    #helpMenu h2 {
+      margin-top: 0;
+      color: #4CAF50;
+    }
+    
+    #helpMenu ul {
+      list-style-type: none;
+      padding: 0;
+    }
+    
+    #helpMenu li {
+      margin: 10px 0;
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
   </style>
-
-
 </head>
 <body>
 <div style="position: absolute; top: 10px; left: 10px; display: grid; grid-template-columns: repeat(3, 1fr); grid-gap: 5px;">
@@ -62,6 +92,20 @@
 </div>
 <div id="score" style="position: absolute; bottom: 10px; left: 10px; background: rgba(0, 0, 0, 0.5); color: white; padding: 10px; font-family: Arial, sans-serif;"></div>
 <div id="astronauts" style="position: absolute; bottom: 10px; right: 20px; background: rgba(0, 0, 0, 0.5); color: white; padding: 10px; font-family: Arial, sans-serif;"></div>
+<div id="helpMenu">
+    <h2>Solar System Controls</h2>
+    <ul>
+        <li><strong>H</strong> - Toggle Help Menu</li>
+        <li><strong>LeftMouse Drag</strong> - Rotate the Camera</li>
+        <li><strong>RightMouse Drag</strong> - Move the Camera</li>
+        <li><strong>Mouse Wheel</strong> - Zoom In/Out</li>
+        <li><strong>Buttons</strong> - Center the view on the selected celestial body or spaceship</li>
+        <li><strong>W</strong> - Move the spaceship forward</li>
+        <li><strong>A</strong> - Move the spaceship left</li>
+        <li><strong>S</strong> - Move the spaceship backward</li>
+        <li><strong>D</strong> - Move the spaceship right</li>
+    </ul>
+</div>
 <canvas id="glCanvas" width="512" height="512" ></canvas>
 
 </body>
