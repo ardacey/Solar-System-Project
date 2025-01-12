@@ -593,11 +593,35 @@ async function main() {
 
     function updateScore() {
         const scoreContent = document.getElementById("score");
+        const spaceship = scene.getInstancesOf(SpaceshipScript)[0];
+        
+        if (spaceship) {
+            const speed = vec3.length(spaceship.velocity);
+            const acceleration = vec3.length(spaceship.acceleration);
+            const position = spaceship.sceneObject.transform.position;
 
-        scoreContent.innerHTML = `
-                <strong>Money on Ship:</strong> ${score.toFixed(2)} <strong>TL</strong><br>
-                <strong>Total Money:</strong> ${totalScore.toFixed(2)} <strong>TL</strong><br>
-                `;
+            scoreContent.innerHTML = `
+                <h3 style="margin-top: 0; margin-bottom: 10px;">Spaceship Info</h3>
+                <div><strong>Score:</strong> ${score.toFixed(2)} <strong>TL</strong></div>
+                <div><strong>Total Score:</strong> ${totalScore.toFixed(2)} <strong>TL</strong></div>
+                <div><strong>Mass:</strong> ${spaceship.mass.toFixed(2)} units</div>
+                <div><strong>Speed:</strong> ${(speed * 1000).toFixed(2)} units/s</div>
+                <div><strong>Acceleration:</strong> ${(acceleration * 1000).toFixed(2)} units/s²</div>
+                <div><strong>Position:</strong> (${position[0].toFixed(0)}, ${position[1].toFixed(0)}, ${position[2].toFixed(0)})</div>
+                ${spaceship.closestBodyInfo ? `
+                <div style="margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 10px;">
+                    <strong>Nearest Body:</strong> ${spaceship.closestBodyInfo.name}<br>
+                    <strong>Distance:</strong> ${spaceship.closestBodyInfo.distance.toFixed(2)} units<br>
+                    <strong>Force:</strong> ${(spaceship.closestBodyInfo.force * 1e5).toFixed(2)} units<br>
+                    <strong>Friction:</strong> ${(spaceship.friction * 1000).toFixed(2)} units
+                </div>` : ''}
+            `;
+        } else {
+            scoreContent.innerHTML = `
+                <h5 style="margin-top: 0; margin-bottom: 10px;">Spaceship Lost!</h5>
+                <strong>Total Score:</strong> ${totalScore.toFixed(2)} <strong>TL</strong><br>
+            `;
+        }
     }
 
     function updateAstronauts() {
