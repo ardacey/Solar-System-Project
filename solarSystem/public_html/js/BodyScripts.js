@@ -357,6 +357,8 @@ class SpaceshipScript extends SceneObjectScript {
     mass;
     speed;
     direction;
+    velocity;
+    acceleration;
 
     constructor(sceneObject, params) {
         super(sceneObject);
@@ -364,18 +366,90 @@ class SpaceshipScript extends SceneObjectScript {
         this.speed = 0;
         this.direction = vec3.fromValues(0, 0, 1);
         this.rotation = { x: 0, y: 0, z: 0 };
+        this.velocity = vec3.fromValues(0, 0, 0);
+        this.acceleration = vec3.fromValues(0, 0, 0);
+        this.mass = 10; // Uzay gemisi kütlesini daha da azalttım
     }
 
     Start() {
         super.Start();
-        this.sceneObject.transform.position = vec3.fromValues(50, 50, 50);
+        this.sceneObject.transform.position = vec3.fromValues(100, 100, 100);
     }
 
     Update() {
         super.Update();
-        this.UpdateTransform();
+        this.applyGravitationalForces();
+        this.updatePhysics();
         this.UpdateRotation();
+        this.UpdateTransform();
         this.CheckCollision();
+    }
+
+    applyGravitationalForces() {
+        const celestialBodies = this.sceneObject.scene.getInstancesOf(CelestialBodyScript);
+        const totalForce = vec3.fromValues(0, 0, 0);
+        
+        celestialBodies.forEach(body => {
+            const G = 6.67430e-11 * 1e-9;
+            
+            const distance = vec3.create();
+            vec3.subtract(distance, body.sceneObject.transform.position, this.sceneObject.transform.position);
+            
+            const r = vec3.length(distance);
+            
+            // Minimum ve maksimum etki mesafeleri
+            const minDistance = 25;
+            const maxDistance = 1000;
+            
+            if (r < minDistance) return;
+            
+            // Büyük kütleli cisimler için ek zayıflatma faktörü
+            let massScaleFactor = 1;
+            if (body.mass > 1e30) { // Güneş gibi büyük kütleli cisimler için
+                massScaleFactor = 1e-5; // Çok daha zayıf çekim
+            } else if (body.mass > 1e25) { // Büyük gezegenler için
+                massScaleFactor = 1e-2; // Biraz daha zayıf çekim
+            }
+            
+            // Mesafeye bağlı kuvvet çarpanı
+            let distanceFactor = 1;
+            if (r <= maxDistance) {
+                const normalizedDistance = (maxDistance - r) / (maxDistance - minDistance);
+                distanceFactor = 1 + Math.pow(normalizedDistance, 2) * 4; // Maksimum 5 kat artış
+            }
+            
+            const forceMagnitude = G * (this.mass * body.mass) / (r * r) * distanceFactor * massScaleFactor;
+            
+            const force = vec3.create();
+            vec3.normalize(force, distance);
+            vec3.scale(force, force, forceMagnitude);
+            
+            vec3.add(totalForce, totalForce, force);
+        });
+        
+        vec3.scale(this.acceleration, totalForce, 1 / this.mass);
+        
+        // İvme limitini düşür
+        const maxAcceleration = 0.005;
+        const currentAccelMagnitude = vec3.length(this.acceleration);
+        if (currentAccelMagnitude > maxAcceleration) {
+            vec3.scale(this.acceleration, this.acceleration, maxAcceleration / currentAccelMagnitude);
+        }
+    }
+
+    updatePhysics() {
+        vec3.scaleAndAdd(this.velocity, this.velocity, this.acceleration, time.deltaTime);
+        
+        // Hız limitini düşür
+        const maxVelocity = 0.15;
+        const currentVelMagnitude = vec3.length(this.velocity);
+        if (currentVelMagnitude > maxVelocity) {
+            vec3.scale(this.velocity, this.velocity, maxVelocity / currentVelMagnitude);
+        }
+        
+        const deltaPosition = vec3.create();
+        vec3.scale(deltaPosition, this.velocity, time.deltaTime);
+        vec3.add(this.sceneObject.transform.position, this.sceneObject.transform.position, deltaPosition);
     }
 
     UpdateTransform() {
@@ -391,7 +465,6 @@ class SpaceshipScript extends SceneObjectScript {
         let cameraDirection = this.sceneObject.scene.camera.front;
         let direction = vec3.fromValues(0, 0, 1);
         let rotation = this.calculateEulerAngles(direction, cameraDirection);
-
 
         this.getTransform().rotation = rotation;
 
