@@ -118,11 +118,15 @@ class PlanetScript extends CelestialBodyScript{
     orbitalDistance;
     angle;
     centralStar;
+    speed;
+    direction;
 
     constructor(sceneObject, params) {
         super(sceneObject, params);
         Object.assign(this, params);
         this.angle = 0;
+        this.speed = 0;
+        this.direction = vec3.fromValues(0, 0, 1);
     }
 
     Start() {
@@ -135,7 +139,8 @@ class PlanetScript extends CelestialBodyScript{
     Update() {
         super.Update();
         this.updateTransform();
-        this.updateOrbitalPosition();
+        if (manual) this.updateMouseTransform();
+        else this.updateOrbitalPosition();
         this.sceneObject.shader.setUniform3FVector("lightPos", [0, 0, 0]);  // Light at sun's position
         this.sceneObject.shader.setUniform3FVector("lightColor", [1, 1, 1]);
         // this.updateSurfaceTemperature();
@@ -172,6 +177,21 @@ class PlanetScript extends CelestialBodyScript{
             0.25
         );
     }
+
+    updateMouseTransform() {
+        const transform = this.sceneObject.transform;
+        transform.position = vec3.add(
+            transform.position,
+            transform.position,
+            vec3.scale(vec3.create(), this.direction, this.speed * time.deltaTime)
+        );
+    }
+
+    moveFront() {this.speed = 0.5; this.direction = this.sceneObject.scene.camera.front;}
+    moveBack(){this.speed = -0.5; this.direction = this.sceneObject.scene.camera.front;}
+    moveRight(){this.speed = 0.5; this.direction = this.sceneObject.scene.camera.right;}
+    moveLeft(){this.speed = -0.5; this.direction = this.sceneObject.scene.camera.right;}
+    stop(){this.speed = 0}
 }
 
 

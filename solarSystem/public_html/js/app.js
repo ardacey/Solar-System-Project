@@ -19,6 +19,8 @@ let ismail = 0;
 let yigitalp = 0;
 let zafer = 0;
 
+let manual = false;
+
 function clearGlBuffer(gl){
     gl.clearColor(0.0,0.0,0.0,1.0);
     gl.clearDepth(1.0);
@@ -425,6 +427,7 @@ async function main() {
         pointerLockEvents();
         function pointerLockEvents() {
             const spaceshipScript = scene.getInstancesOf(SpaceshipScript)[0];
+            const earthScript = scene.listOfSceneObjects.find(obj => obj.Mesh?.meshOBJ?.name === "earthMesh").SceneObjectScripts[0];
             const ardaScript = scene.listOfSceneObjects.find(obj => obj.Mesh?.meshOBJ?.name === "ardaMesh").SceneObjectScripts[0];
             const ismailScript = scene.listOfSceneObjects.find(obj => obj.Mesh?.meshOBJ?.name === "ismailMesh").SceneObjectScripts[0];
             const yigitalpScript = scene.listOfSceneObjects.find(obj => obj.Mesh?.meshOBJ?.name === "yigitalpMesh").SceneObjectScripts[0];
@@ -442,6 +445,7 @@ async function main() {
                 }
                 if (document.pointerLockElement &&
                         (targetBody === "Spaceship" ||
+                        targetBody === "Earth" ||
                         targetBody === "Arda" ||
                         targetBody === "Ismail" ||
                         targetBody === "Yigitalp" ||
@@ -449,6 +453,7 @@ async function main() {
                 )   {
                     const targetScripts = {
                         "Spaceship": spaceshipScript,
+                        "Earth": earthScript,
                         "Arda": ardaScript,
                         "Ismail": ismailScript,
                         "Yigitalp": yigitalpScript,
@@ -469,6 +474,8 @@ async function main() {
                         case 'a':
                             selectedScript.moveLeft();
                             break;
+                        case 'm':
+                            manual = !manual;
                     }
                 }
                 if (event.key === 'k') {
@@ -482,6 +489,7 @@ async function main() {
 
                 if (document.pointerLockElement &&
                     (targetBody === "Spaceship" ||
+                        targetBody === "Earth" ||
                         targetBody === "Arda" ||
                         targetBody === "Ismail" ||
                         targetBody === "Yigitalp" ||
@@ -489,6 +497,7 @@ async function main() {
                 ) {
                     const targetScripts = {
                         "Spaceship": spaceshipScript,
+                        "Earth": earthScript,
                         "Arda": ardaScript,
                         "Ismail": ismailScript,
                         "Yigitalp": yigitalpScript,
