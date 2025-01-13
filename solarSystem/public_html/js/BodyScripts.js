@@ -522,9 +522,15 @@ class AsteroidScript extends SceneObjectScript{
 }
 
 class AstronautScript extends SceneObjectScript{
+    speed;
+    direction;
+
     constructor(sceneObject, params) {
         super(sceneObject);
         Object.assign(this, params);
+        this.speed = 0;
+        this.direction = vec3.fromValues(0, 0, 1);
+        this.rotation = { x: 0, y: 0, z: 0 };
     }
 
     Start() {
@@ -539,6 +545,65 @@ class AstronautScript extends SceneObjectScript{
             this.sceneObject.transform.position = vec3.fromValues(300,400,200);
         }
     }
+
+    Update() {
+        super.Update();
+        this.UpdateTransform();
+        this.UpdateRotation();
+    }
+
+    UpdateTransform() {
+        const transform = this.sceneObject.transform;
+        transform.position = vec3.add(
+            transform.position,
+            transform.position,
+            vec3.scale(vec3.create(), this.direction, this.speed * time.deltaTime)
+        );
+    }
+
+    UpdateRotation() {
+        let cameraDirection = this.sceneObject.scene.camera.front;
+        let direction = vec3.fromValues(0, 0, 1);
+        let rotation = this.calculateEulerAngles(direction, cameraDirection);
+
+
+        this.getTransform().rotation = rotation;
+
+        // let model = this.getTransform().getModelMatrix();
+        // let inverseTranspose = mat4.transpose(mat4.create(),mat4.invert(mat4.create(),model));
+    }
+
+    calculateEulerAngles(currentDir, targetDir) {
+        // Normalize vectors
+        const current = vec3.create();
+        const target = vec3.create();
+        vec3.normalize(current, currentDir);
+        vec3.normalize(target, targetDir);
+
+        // Calculate yaw (Y-axis rotation)
+        const yaw = Math.atan2(target[0], target[2]) - Math.atan2(current[0], current[2]);
+
+        // Calculate pitch (X-axis rotation)
+        const currentPitch = Math.asin(-current[1]);
+        const targetPitch = Math.asin(-target[1]);
+        const pitch = targetPitch - currentPitch;
+
+        // For this implementation, we assume no roll (Z-axis rotation) is needed
+        const roll = 0;
+
+        const toDegrees = angle => angle * (180 / Math.PI);
+        return vec3.fromValues(
+            toDegrees(pitch),
+            toDegrees(yaw),
+            toDegrees(roll)
+        );
+    }
+
+    moveFront() {this.speed = 0.5; this.direction = this.sceneObject.scene.camera.front;}
+    moveBack(){this.speed = -0.5; this.direction = this.sceneObject.scene.camera.front;}
+    moveRight(){this.speed = 0.5; this.direction = this.sceneObject.scene.camera.right;}
+    moveLeft(){this.speed = -0.5; this.direction = this.sceneObject.scene.camera.right;}
+    stop(){this.speed = 0}
 }
 
 class CameraFollowerScript extends SceneObjectScript{

@@ -182,6 +182,17 @@ async function main() {
                 mtl:"Models/AsteroidModel/AsteroidModel.mtl",
                 downloadMtlTextures: true,
                 name:"asteroidMesh"
+            },
+            {
+                obj:"Models/names.obj",
+                downloadMtlTextures: false,
+                name:"namesMesh",
+            },
+            {
+                obj:"Models/AstronautModel/AstronautModel.obj",
+                mtl:"Models/AstronautModel/AstronautModel.mtl",
+                downloadMtlTextures: true,
+                name:"astronautMesh"
             }
         ])
 
@@ -339,6 +350,25 @@ async function main() {
 
         for(let i = 0; i < 25; i++) createAsteroid();
 
+        // Create Hall of Fame
+        const namesMesh = new Mesh(meshMap["namesMesh"],gl);
+        const namesObject = new SceneObject(namesMesh, celestialShader);
+        BindSceneObject(namesObject, SceneObjectScript);
+        namesObject.transform.position = vec3.fromValues(5000,5000,5000);
+        sceneObjects.push(namesObject);
+
+        const astronautMesh = new Mesh(meshMap["astronautMesh"],gl);
+        const astronautObject = new SceneObject(astronautMesh, celestialShader);
+        BindSceneObject(astronautObject, SceneObjectScript);
+        astronautObject.transform.position = vec3.fromValues(5005,5000,5000);
+        sceneObjects.push(astronautObject);
+
+        const anotherSpaceshipMesh = new Mesh(meshMap["spaceshipMesh"],gl);
+        const anotherSpaceshipObject = new SceneObject(anotherSpaceshipMesh, celestialShader);
+        BindSceneObject(anotherSpaceshipObject, SceneObjectScript);
+        anotherSpaceshipObject.transform.position = vec3.fromValues(4995,5000,5000);
+        sceneObjects.push(anotherSpaceshipObject);
+
         //Create CameraFollower
         const cameraObject = SceneObject.CreateEmptySceneObject();
         BindSceneObject(cameraObject, CameraFollowerScript,[{
@@ -357,6 +387,7 @@ async function main() {
             yigitalp:yigitalpObject,
             zafer:zaferObject,
             spaceship:spaceshipObject,
+            names:namesObject
         }]);
         sceneObjects.push(cameraObject);
 
@@ -394,6 +425,11 @@ async function main() {
         pointerLockEvents();
         function pointerLockEvents() {
             const spaceshipScript = scene.getInstancesOf(SpaceshipScript)[0];
+            const ardaScript = scene.listOfSceneObjects.find(obj => obj.Mesh?.meshOBJ?.name === "ardaMesh").SceneObjectScripts[0];
+            const ismailScript = scene.listOfSceneObjects.find(obj => obj.Mesh?.meshOBJ?.name === "ismailMesh").SceneObjectScripts[0];
+            const yigitalpScript = scene.listOfSceneObjects.find(obj => obj.Mesh?.meshOBJ?.name === "yigitalpMesh").SceneObjectScripts[0];
+            const zaferScript = scene.listOfSceneObjects.find(obj => obj.Mesh?.meshOBJ?.name === "zaferMesh").SceneObjectScripts[0];
+
             document.addEventListener('keydown', (event) => {
                 const rotationSpeed = 2;
 
@@ -404,29 +440,63 @@ async function main() {
                         });
                     }
                 }
-                if (document.pointerLockElement && targetBody === "Spaceship") {
+                if (document.pointerLockElement &&
+                        (targetBody === "Spaceship" ||
+                        targetBody === "Arda" ||
+                        targetBody === "Ismail" ||
+                        targetBody === "Yigitalp" ||
+                        targetBody === "Zafer")
+                )   {
+                    const targetScripts = {
+                        "Spaceship": spaceshipScript,
+                        "Arda": ardaScript,
+                        "Ismail": ismailScript,
+                        "Yigitalp": yigitalpScript,
+                        "Zafer": zaferScript
+                    };
+
+                    const selectedScript = targetScripts[targetBody];
                     switch (event.key) {
                         case 'w':
-                            spaceshipScript.moveFront();
+                            selectedScript.moveFront();
                             break;
                         case 's':
-                            spaceshipScript.moveBack();
+                            selectedScript.moveBack();
                             break;
                         case 'd':
-                            spaceshipScript.moveRight();
+                            selectedScript.moveRight();
                             break;
                         case 'a':
-                            spaceshipScript.moveLeft();
+                            selectedScript.moveLeft();
                             break;
                     }
+                }
+                if (event.key === 'k') {
+                    const cameraHandler = scene.getInstancesOf(CameraFollowerScript)[0];
+                    cameraHandler.lockCamera("names");
+                    targetBody = "names";
                 }
             });
 
             document.addEventListener('keyup', (event) => {
 
-                if (document.pointerLockElement && targetBody === "Spaceship") {
+                if (document.pointerLockElement &&
+                    (targetBody === "Spaceship" ||
+                        targetBody === "Arda" ||
+                        targetBody === "Ismail" ||
+                        targetBody === "Yigitalp" ||
+                        targetBody === "Zafer")
+                ) {
+                    const targetScripts = {
+                        "Spaceship": spaceshipScript,
+                        "Arda": ardaScript,
+                        "Ismail": ismailScript,
+                        "Yigitalp": yigitalpScript,
+                        "Zafer": zaferScript
+                    };
 
-                    spaceshipScript.stop();
+                    const selectedScript = targetScripts[targetBody];
+                    selectedScript.stop();
                 }
             });
 
@@ -668,7 +738,9 @@ async function main() {
             targetBody !== "Arda" &&
             targetBody !== "Ismail" &&
             targetBody !== "Yigitalp" &&
-            targetBody !== "Zafer") updateInfoBox(targetBody)
+            targetBody !== "Zafer" &&
+            targetBody !== "names")
+            updateInfoBox(targetBody)
         updateScore();
         updateAstronauts();
 
