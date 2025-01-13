@@ -120,6 +120,10 @@ class PlanetScript extends CelestialBodyScript{
     centralStar;
     speed;
     direction;
+    condition = false;
+    orbitRadius;
+    orbitErrorMargin = 0.05;
+
 
     constructor(sceneObject, params) {
         super(sceneObject, params);
@@ -127,6 +131,8 @@ class PlanetScript extends CelestialBodyScript{
         this.angle = 0;
         this.speed = 0;
         this.direction = vec3.fromValues(0, 0, 1);
+        this.orbitRadius = this.orbitalDistance * CelestialBodyScript.DISTANCE_SCALE;
+
     }
 
     Start() {
@@ -139,7 +145,10 @@ class PlanetScript extends CelestialBodyScript{
     Update() {
         super.Update();
         this.updateTransform();
-        if (manual) this.updateMouseTransform();
+        if (manual || this.condition) {
+            this.updateMouseTransform();
+            this.checkOrbitBoundary();
+        }
         else this.updateOrbitalPosition();
         this.sceneObject.shader.setUniform3FVector("lightPos", [0, 0, 0]);  // Light at sun's position
         this.sceneObject.shader.setUniform3FVector("lightColor", [1, 1, 1]);
@@ -156,6 +165,65 @@ class PlanetScript extends CelestialBodyScript{
 
         this.sceneObject.transform.position = vec3.fromValues(x, 0, z);
 
+    }
+
+    checkOrbitBoundary() {
+        // Yörünge mesafesi ile gezegenin mevcut mesafesi arasındaki farkı hesapla
+        const currentDistance = vec3.length(this.sceneObject.transform.position);
+        const lowerBound = this.orbitRadius * (1 - this.orbitErrorMargin); // %10 daha az
+        const upperBound = this.orbitRadius * (1 + this.orbitErrorMargin); // %10 daha fazla
+
+        if (currentDistance < lowerBound || currentDistance > upperBound) {
+            // Yörüngeden sapma tespit edildi
+            this.condition = false;
+
+            // Eğer gezegen çok yakına girerse (yıldızdan çok yakın)
+            if (currentDistance < 25) { // 25 birim mesafe örnek olarak belirlenebilir
+                console.log("Gezegen yıldıza çekildi ve yok oldu");
+                this.sceneObject.scene.listOfSceneObjects.splice(this.sceneObject.scene.listOfSceneObjects.indexOf(this.sceneObject), 1);
+            } else {
+                // Yörüngeden çıkarsa gezegenin doğru yöne hareket etmesi sağlanacak
+                this.moveTowardsSun(currentDistance, lowerBound, upperBound);
+            }
+        }
+    }
+
+    moveTowardsSun(currentDistance, lowerBound, upperBound) {
+        // Eğer gezegen lowerBound'dan küçükse, güneşe doğru hareket etsin
+        if (currentDistance < lowerBound) {
+            console.log("Gezegen güneşe doğru hareket ediyor");
+            this.moveInDirection(true); // Güneşe doğru
+        }
+        // Eğer gezegen upperBound'dan büyükse, güneşten uzaklaşarak hareket etsin
+        else if (currentDistance > upperBound) {
+            console.log("Gezegen güneşten uzaklaşıyor");
+            this.moveInDirection(false); // Güneşten uzaklaşarak
+        }
+    }
+
+    moveInDirection(towardsSun) {
+        // Gezegenin yörüngedeki konumunu alalım
+        const position = this.sceneObject.transform.position;
+
+        // Yıldızın pozisyonu (0, 0, 0 kabul ediyoruz)
+        const sunPosition = vec3.fromValues(0, 0, 0);
+
+        // Pozisyona göre yön vektörünü hesaplayalım
+        const direction = vec3.create();
+        vec3.subtract(direction, sunPosition, position);  // Güneşe doğru yön
+        vec3.normalize(direction, direction);
+
+        // Eğer güneşe doğruysa, yön vektörünü ters çevirelim (güneşten uzaklaşma)
+        if (!towardsSun) {
+            vec3.scale(direction, direction, -1);
+        }
+
+        // Yön vektörünü hızla çarparak gezegenin hareketini gerçekleştirelim
+        const speed = 0.1; // Gezegenin hızını ayarlayalım
+        vec3.scale(direction, direction, speed);
+
+        // Gezegenin yeni pozisyonunu hesaplayalım
+        vec3.add(this.sceneObject.transform.position, this.sceneObject.transform.position, direction);
     }
 
     updateSurfaceTemperature() {
@@ -180,6 +248,29 @@ class PlanetScript extends CelestialBodyScript{
 
     updateMouseTransform() {
         const transform = this.sceneObject.transform;
+
+        // Yörüngenin alt ve üst sınırlarını hesaplayalım
+        const lowerBound = this.orbitalDistance * 0.95;  // Yörüngenin %95 alt sınırı
+        const upperBound = this.orbitalDistance * 1.05;  // Yörüngenin %105 üst sınırı
+
+        // Mevcut mesafeyi hesaplayalım
+        const currentDistance = vec3.length(transform.position);  // Gezegenin güneşe olan mesafesi
+
+        // Yörüngeden sapma durumunu kontrol edelim
+        if (currentDistance < lowerBound) {
+            // Eğer gezegen çok yakınsa, güneşe doğru hareket etmesi için yönü değiştir
+            const directionToSun = vec3.normalize(vec3.create(), transform.position);
+            vec3.scale(this.direction, directionToSun, 1);  // Güneşe doğru hareket et
+        } else if (currentDistance > upperBound) {
+            // Eğer gezegen çok uzaksa, güneşten uzaklaşması için yönü değiştir
+            const directionAwayFromSun = vec3.normalize(vec3.create(), transform.position);
+            vec3.scale(this.direction, directionAwayFromSun, -1);  // Güneşten uzaklaş
+        } else {
+            // Yörüngede kalıyorsa, normal hareket etmeye devam et
+            this.direction = vec3.fromValues(Math.cos(this.angle), 0, Math.sin(this.angle));
+        }
+
+        // Gezegeni yönlendirme ve hareket ettirme işlemi
         transform.position = vec3.add(
             transform.position,
             transform.position,
