@@ -1,7 +1,25 @@
 "use strict";
 
 let shapeShader;
+let celestialShader;
+let meshMap;
+const sceneObjects = [];
 let targetBody = "Sun";
+
+let lastAsteroidTime = 0;
+const asteroidSpawnInterval = 5000;
+const maxAsteroids = 50;
+let asteroidCount = 0;
+
+let score = 0;
+let totalScore = 0;
+
+let arda = 0;
+let ismail = 0;
+let yigitalp = 0;
+let zafer = 0;
+
+let manual = false;
 
 function clearGlBuffer(gl){
     gl.clearColor(0.0,0.0,0.0,1.0);
@@ -11,8 +29,45 @@ function clearGlBuffer(gl){
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 }
 
-main();
+class OrbitMesh {
+    constructor(gl, orbitalDistance, color = [0.0, 1.0, 1.0], segments = 360) {
+        this.gl = gl;
+        this.color = color;
+        
+        const vertices = [];
+        for (let i = 0; i <= segments; i++) {
+            const angle = (i / segments) * Math.PI * 2;
+            const x = Math.cos(angle) * orbitalDistance * CelestialBodyScript.DISTANCE_SCALE;
+            const z = Math.sin(angle) * orbitalDistance * CelestialBodyScript.DISTANCE_SCALE;
+            vertices.push(x, 0, z);
+        }
+        
+        const indices = [];
+        for (let i = 0; i < segments; i++) {
+            indices.push(i, i + 1);
+        }
+        indices.push(segments, 0); // Close the loop
+        
+        this.bufferInfo = twgl.createBufferInfoFromArrays(gl, {
+            aPos: { numComponents: 3, data: new Float32Array(vertices) },
+            indices: { numComponents: 2, data: new Uint16Array(indices) }
+        });
+    }
+    
+    draw(shader) {
+        const gl = this.gl;
+        shader.useProgram();
+        twgl.setBuffersAndAttributes(gl, shader.programInfo, this.bufferInfo);
+        shader.setUniform3FVector("orbitColor", this.color);
+        gl.drawElements(gl.LINES, this.bufferInfo.numElements, gl.UNSIGNED_SHORT, 0);
+    }
+    
+    setupMesh() {
+        // Empty
+    }
+}
 
+main();
 
 async function main() {
     const canvas = document.querySelector("#glCanvas");
@@ -27,12 +82,13 @@ async function main() {
 
     async function setupScene() {
         // Initialize shaders
-        const celestialShader = await initShader("glsl/SunVertex.glsl", "glsl/SunFragment.glsl", gl);
+        celestialShader = await initShader("glsl/SunVertex.glsl", "glsl/SunFragment.glsl", gl);
         const sunShader = await initShader("glsl/test2vertex.glsl", "glsl/test2frag.glsl", gl);
         const skyboxShader = await initShader("glsl/skybox-vertex.glsl", "glsl/skybox-fragment.glsl", gl);
+        const orbitShader = await initShader("glsl/orbitVertex.glsl", "glsl/orbitFragment.glsl", gl);
         shapeShader = await initShader("glsl/ShapeVertex.glsl", "glsl/ShapeFragment.glsl", gl)
 
-        let meshMap = await OBJ.downloadModels([
+        meshMap = await OBJ.downloadModels([
             {
                 obj:"Models/SunModel/SunModel.obj",
                 mtl:"Models/SunModel/SunModel.mtl",
@@ -93,10 +149,54 @@ async function main() {
                 downloadMtlTextures: true,
                 name:"plutoMesh"
             },
+            {
+                obj:"Models/ArdaModel/ArdaModel.obj",
+                mtl:"Models/ArdaModel/ArdaModel.mtl",
+                downloadMtlTextures: true,
+                name:"ardaMesh"
+            },
+            {
+                obj:"Models/IsmailModel/IsmailModel.obj",
+                mtl:"Models/IsmailModel/IsmailModel.mtl",
+                downloadMtlTextures: true,
+                name:"ismailMesh"
+            },
+            {
+                obj:"Models/YigitalpModel/YigitalpModel.obj",
+                mtl:"Models/YigitalpModel/YigitalpModel.mtl",
+                downloadMtlTextures: true,
+                name:"yigitalpMesh"
+            },
+            {
+                obj:"Models/ZaferModel/ZaferModel.obj",
+                mtl:"Models/ZaferModel/ZaferModel.mtl",
+                downloadMtlTextures: true,
+                name:"zaferMesh"
+            },
+            {
+                obj:"Models/SpaceshipModel/SpaceshipModel.obj",
+                mtl:"Models/SpaceshipModel/SpaceshipModel.mtl",
+                downloadMtlTextures: true,
+                name:"spaceshipMesh"
+            },
+            {
+                obj:"Models/AsteroidModel/AsteroidModel.obj",
+                mtl:"Models/AsteroidModel/AsteroidModel.mtl",
+                downloadMtlTextures: true,
+                name:"asteroidMesh"
+            },
+            {
+                obj:"Models/names.obj",
+                downloadMtlTextures: false,
+                name:"namesMesh",
+            },
+            {
+                obj:"Models/AstronautModel/AstronautModel.obj",
+                mtl:"Models/AstronautModel/AstronautModel.mtl",
+                downloadMtlTextures: true,
+                name:"astronautMesh"
+            }
         ])
-
-        // Create scene objects
-        const sceneObjects = [];
 
         // Create skybox
         const skyboxObject = SceneObject.CreateEmptySceneObject();
@@ -106,75 +206,170 @@ async function main() {
 
         // Create Sun
         const sunMesh = new Mesh(meshMap["sunMesh"],gl);
-
         const sunObject = new SceneObject(sunMesh, sunShader);
-        BindSceneObject(sunObject, StarScript, [CelestialBodyProperties.Sun]);
+        BindSceneObject(sunObject, StarScript, [BodyProperties.Sun]);
         sceneObjects.push(sunObject);
-
         const sunScript = sunObject.SceneObjectScripts.find(script => script instanceof StarScript);
 
         // Create Mercury
         const mercuryMesh = new Mesh(meshMap["mercuryMesh"],gl);
         const mercuryObject = new SceneObject(mercuryMesh, celestialShader);
-        const mercuryScript = BindSceneObject(mercuryObject, PlanetScript, [CelestialBodyProperties.Mercury]);
+        const mercuryScript = BindSceneObject(mercuryObject, PlanetScript, [BodyProperties.Mercury]);
         mercuryScript.centralStar = sunScript;
         sceneObjects.push(mercuryObject);
+        
+        // Mercury's orbit
+        const mercuryOrbitMesh = new OrbitMesh(gl, BodyProperties.Mercury.orbitalDistance, [0.7, 0.5, 0.5]);
+        const mercuryOrbitObject = new SceneObject(mercuryOrbitMesh, orbitShader);
+        sceneObjects.push(mercuryOrbitObject);
 
         // Create Venus
         const venusMesh = new Mesh(meshMap["venusMesh"],gl);
         const venusObject = new SceneObject(venusMesh, celestialShader);
-        const venusScript = BindSceneObject(venusObject, PlanetScript, [CelestialBodyProperties.Venus]);
+        const venusScript = BindSceneObject(venusObject, PlanetScript, [BodyProperties.Venus]);
         venusScript.centralStar = sunScript;
         sceneObjects.push(venusObject);
+
+        // Create Venus's orbit (yellowish)
+        const venusOrbitMesh = new OrbitMesh(gl, BodyProperties.Venus.orbitalDistance, [0.9, 0.9, 0.5]);
+        const venusOrbitObject = new SceneObject(venusOrbitMesh, orbitShader);
+        sceneObjects.push(venusOrbitObject);
 
         // Create Earth
         const earthMesh = new Mesh(meshMap["earthMesh"],gl);
         const earthObject = new SceneObject(earthMesh, celestialShader);
-        const earthScript = BindSceneObject(earthObject, PlanetScript, [CelestialBodyProperties.Earth]);
+        const earthScript = BindSceneObject(earthObject, PlanetScript, [BodyProperties.Earth]);
         earthScript.centralStar = sunScript;
         sceneObjects.push(earthObject);
+
+        // Create Earth's orbit (blue)
+        const earthOrbitMesh = new OrbitMesh(gl, BodyProperties.Earth.orbitalDistance, [0.2, 0.5, 1.0]);
+        const earthOrbitObject = new SceneObject(earthOrbitMesh, orbitShader);
+        sceneObjects.push(earthOrbitObject);
 
         // Create Mars
         const marsMesh = new Mesh(meshMap["marsMesh"],gl);
         const marsObject = new SceneObject(marsMesh, celestialShader);
-        const marsScript = BindSceneObject(marsObject, PlanetScript, [CelestialBodyProperties.Mars]);
+        const marsScript = BindSceneObject(marsObject, PlanetScript, [BodyProperties.Mars]);
         marsScript.centralStar = sunScript;
         sceneObjects.push(marsObject);
+
+        // Create Mars's orbit (red-orange)
+        const marsOrbitMesh = new OrbitMesh(gl, BodyProperties.Mars.orbitalDistance, [1.0, 0.4, 0.2]);
+        const marsOrbitObject = new SceneObject(marsOrbitMesh, orbitShader);
+        sceneObjects.push(marsOrbitObject);
 
         // Create Jupiter
         const jupiterMesh = new Mesh(meshMap["jupiterMesh"],gl);
         const jupiterObject = new SceneObject(jupiterMesh, celestialShader);
-        const jupiterScript = BindSceneObject(jupiterObject, PlanetScript, [CelestialBodyProperties.Jupiter]);
+        const jupiterScript = BindSceneObject(jupiterObject, PlanetScript, [BodyProperties.Jupiter]);
         jupiterScript.centralStar = sunScript;
         sceneObjects.push(jupiterObject);
+
+        // Create Jupiter's orbit (brown-orange)
+        const jupiterOrbitMesh = new OrbitMesh(gl, BodyProperties.Jupiter.orbitalDistance, [0.8, 0.6, 0.3]);
+        const jupiterOrbitObject = new SceneObject(jupiterOrbitMesh, orbitShader);
+        sceneObjects.push(jupiterOrbitObject);
 
         // Create Saturn
         const saturnMesh = new Mesh(meshMap["saturnMesh"],gl);
         const saturnObject = new SceneObject(saturnMesh, celestialShader);
-        const saturnScript = BindSceneObject(saturnObject, PlanetScript, [CelestialBodyProperties.Saturn]);
+        const saturnScript = BindSceneObject(saturnObject, PlanetScript, [BodyProperties.Saturn]);
         saturnScript.centralStar = sunScript;
         sceneObjects.push(saturnObject);
+
+        // Create Saturn's orbit (golden)
+        const saturnOrbitMesh = new OrbitMesh(gl, BodyProperties.Saturn.orbitalDistance, [0.9, 0.8, 0.4]);
+        const saturnOrbitObject = new SceneObject(saturnOrbitMesh, orbitShader);
+        sceneObjects.push(saturnOrbitObject);
 
         // Create Uranus
         const uranusMesh = new Mesh(meshMap["uranusMesh"],gl);
         const uranusObject = new SceneObject(uranusMesh, celestialShader);
-        const uranusScript = BindSceneObject(uranusObject, PlanetScript, [CelestialBodyProperties.Uranus]);
-        uranusScript.centralStar = sunScript
+        const uranusScript = BindSceneObject(uranusObject, PlanetScript, [BodyProperties.Uranus]);
+        uranusScript.centralStar = sunScript;
         sceneObjects.push(uranusObject);
+
+        // Create Uranus's orbit (light blue)
+        const uranusOrbitMesh = new OrbitMesh(gl, BodyProperties.Uranus.orbitalDistance, [0.5, 0.8, 0.9]);
+        const uranusOrbitObject = new SceneObject(uranusOrbitMesh, orbitShader);
+        sceneObjects.push(uranusOrbitObject);
 
         // Create Neptune
         const neptuneMesh = new Mesh(meshMap["neptuneMesh"],gl);
         const neptuneObject = new SceneObject(neptuneMesh, celestialShader);
-        const neptuneScript = BindSceneObject(neptuneObject, PlanetScript, [CelestialBodyProperties.Neptune]);
+        const neptuneScript = BindSceneObject(neptuneObject, PlanetScript, [BodyProperties.Neptune]);
         neptuneScript.centralStar = sunScript;
         sceneObjects.push(neptuneObject);
+
+        // Create Neptune's orbit (deep blue)
+        const neptuneOrbitMesh = new OrbitMesh(gl, BodyProperties.Neptune.orbitalDistance, [0.1, 0.2, 0.8]);
+        const neptuneOrbitObject = new SceneObject(neptuneOrbitMesh, orbitShader);
+        sceneObjects.push(neptuneOrbitObject);
 
         // Create Pluto
         const plutoMesh = new Mesh(meshMap["plutoMesh"],gl);
         const plutoObject = new SceneObject(plutoMesh, celestialShader);
-        const plutoScript = BindSceneObject(plutoObject, PlanetScript, [CelestialBodyProperties.Pluto]);
+        const plutoScript = BindSceneObject(plutoObject, PlanetScript, [BodyProperties.Pluto]);
         plutoScript.centralStar = sunScript;
         sceneObjects.push(plutoObject);
+
+        // Create Pluto's orbit (purple-gray)
+        const plutoOrbitMesh = new OrbitMesh(gl, BodyProperties.Pluto.orbitalDistance, [0.6, 0.4, 0.6]);
+        const plutoOrbitObject = new SceneObject(plutoOrbitMesh, orbitShader);
+        sceneObjects.push(plutoOrbitObject);
+
+        // Create Arda
+        const ardaMesh = new Mesh(meshMap["ardaMesh"],gl);
+        const ardaObject = new SceneObject(ardaMesh, celestialShader);
+        BindSceneObject(ardaObject, AstronautScript);
+        sceneObjects.push(ardaObject);
+
+        // Create Ismail
+        const ismailMesh = new Mesh(meshMap["ismailMesh"],gl);
+        const ismailObject = new SceneObject(ismailMesh, celestialShader);
+        BindSceneObject(ismailObject, AstronautScript);
+        sceneObjects.push(ismailObject);
+
+        // Create Yigitalp
+        const yigitalpMesh = new Mesh(meshMap["yigitalpMesh"],gl);
+        const yigitalpObject = new SceneObject(yigitalpMesh, celestialShader);
+        BindSceneObject(yigitalpObject, AstronautScript);
+        sceneObjects.push(yigitalpObject);
+
+        // Create Zafer
+        const zaferMesh = new Mesh(meshMap["zaferMesh"],gl);
+        const zaferObject = new SceneObject(zaferMesh, celestialShader);
+        BindSceneObject(zaferObject, AstronautScript);
+        sceneObjects.push(zaferObject);
+
+        // Create Spaceship
+        const spaceshipMesh = new Mesh(meshMap["spaceshipMesh"],gl);
+        const spaceshipObject = new SceneObject(spaceshipMesh, celestialShader);
+        const spaceshipScript = BindSceneObject(spaceshipObject, SpaceshipScript, [BodyProperties.Spaceship]);
+        spaceshipScript.centralStar = sunScript;
+        sceneObjects.push(spaceshipObject);
+
+        for(let i = 0; i < 25; i++) createAsteroid();
+
+        // Create Hall of Fame
+        const namesMesh = new Mesh(meshMap["namesMesh"],gl);
+        const namesObject = new SceneObject(namesMesh, celestialShader);
+        BindSceneObject(namesObject, SceneObjectScript);
+        namesObject.transform.position = vec3.fromValues(5000,5000,5000);
+        sceneObjects.push(namesObject);
+
+        const astronautMesh = new Mesh(meshMap["astronautMesh"],gl);
+        const astronautObject = new SceneObject(astronautMesh, celestialShader);
+        BindSceneObject(astronautObject, SceneObjectScript);
+        astronautObject.transform.position = vec3.fromValues(5005,5000,5000);
+        sceneObjects.push(astronautObject);
+
+        const anotherSpaceshipMesh = new Mesh(meshMap["spaceshipMesh"],gl);
+        const anotherSpaceshipObject = new SceneObject(anotherSpaceshipMesh, celestialShader);
+        BindSceneObject(anotherSpaceshipObject, SceneObjectScript);
+        anotherSpaceshipObject.transform.position = vec3.fromValues(4995,5000,5000);
+        sceneObjects.push(anotherSpaceshipObject);
 
         //Create CameraFollower
         const cameraObject = SceneObject.CreateEmptySceneObject();
@@ -189,6 +384,12 @@ async function main() {
             uranus:uranusObject,
             neptune:neptuneObject,
             pluto:plutoObject,
+            arda:ardaObject,
+            ismail:ismailObject,
+            yigitalp:yigitalpObject,
+            zafer:zaferObject,
+            spaceship:spaceshipObject,
+            names:namesObject
         }]);
         sceneObjects.push(cameraObject);
 
@@ -198,10 +399,7 @@ async function main() {
     }
 
     const scene = await setupScene();
-
-
-
-
+    
     eventHandlers();
     function eventHandlers() {
         let activeButton = null;
@@ -226,10 +424,18 @@ async function main() {
         }
 
 
-
         pointerLockEvents();
         function pointerLockEvents() {
+            const spaceshipScript = scene.getInstancesOf(SpaceshipScript)[0];
+            const earthScript = scene.listOfSceneObjects.find(obj => obj.Mesh?.meshOBJ?.name === "earthMesh").SceneObjectScripts[0];
+            const ardaScript = scene.listOfSceneObjects.find(obj => obj.Mesh?.meshOBJ?.name === "ardaMesh").SceneObjectScripts[0];
+            const ismailScript = scene.listOfSceneObjects.find(obj => obj.Mesh?.meshOBJ?.name === "ismailMesh").SceneObjectScripts[0];
+            const yigitalpScript = scene.listOfSceneObjects.find(obj => obj.Mesh?.meshOBJ?.name === "yigitalpMesh").SceneObjectScripts[0];
+            const zaferScript = scene.listOfSceneObjects.find(obj => obj.Mesh?.meshOBJ?.name === "zaferMesh").SceneObjectScripts[0];
+
             document.addEventListener('keydown', (event) => {
+                const rotationSpeed = 2;
+
                 if (event.key === 'p') {
                     if (!document.pointerLockElement) {
                         canvas.requestPointerLock({
@@ -237,7 +443,73 @@ async function main() {
                         });
                     }
                 }
+                if (document.pointerLockElement &&
+                        (targetBody === "Spaceship" ||
+                        targetBody === "Earth" ||
+                        targetBody === "Arda" ||
+                        targetBody === "Ismail" ||
+                        targetBody === "Yigitalp" ||
+                        targetBody === "Zafer")
+                )   {
+                    const targetScripts = {
+                        "Spaceship": spaceshipScript,
+                        "Earth": earthScript,
+                        "Arda": ardaScript,
+                        "Ismail": ismailScript,
+                        "Yigitalp": yigitalpScript,
+                        "Zafer": zaferScript
+                    };
+
+                    const selectedScript = targetScripts[targetBody];
+                    switch (event.key) {
+                        case 'w':
+                            selectedScript.moveFront();
+                            break;
+                        case 's':
+                            selectedScript.moveBack();
+                            break;
+                        case 'd':
+                            selectedScript.moveRight();
+                            break;
+                        case 'a':
+                            selectedScript.moveLeft();
+                            break;
+                        case 'm':
+                            manual = !manual;
+                            break;
+                    }
+                }
+                if (event.key === 'k') {
+                    const cameraHandler = scene.getInstancesOf(CameraFollowerScript)[0];
+                    cameraHandler.lockCamera("names");
+                    targetBody = "names";
+                }
             });
+
+            document.addEventListener('keyup', (event) => {
+
+                if (document.pointerLockElement &&
+                    (targetBody === "Spaceship" ||
+                        targetBody === "Earth" ||
+                        targetBody === "Arda" ||
+                        targetBody === "Ismail" ||
+                        targetBody === "Yigitalp" ||
+                        targetBody === "Zafer")
+                ) {
+                    const targetScripts = {
+                        "Spaceship": spaceshipScript,
+                        "Earth": earthScript,
+                        "Arda": ardaScript,
+                        "Ismail": ismailScript,
+                        "Yigitalp": yigitalpScript,
+                        "Zafer": zaferScript
+                    };
+
+                    const selectedScript = targetScripts[targetBody];
+                    selectedScript.stop();
+                }
+            });
+
             document.addEventListener('pointerlockchange', () => {
                 if (document.pointerLockElement === canvas) {
                     document.addEventListener('mousemove', updateMouseMovement);
@@ -264,67 +536,45 @@ async function main() {
 
         interfaceHandler();
         function interfaceHandler() {
-            const centerSun = document.getElementById("centerSun");
-            const centerMercury = document.getElementById("centerMercury");
-            const centerVenus = document.getElementById("centerVenus");
-            const centerEarth = document.getElementById("centerEarth");
-            const centerMars = document.getElementById("centerMars");
-            const centerJupiter = document.getElementById("centerJupiter");
-            const centerSaturn = document.getElementById("centerSaturn");
-            const centerUranus = document.getElementById("centerUranus");
-            const centerNeptune = document.getElementById("centerNeptune");
-            const centerPluto = document.getElementById("centerPluto");
-
+            const centerSelector = document.getElementById("centerSelector");
             const cameraHandler = scene.getInstancesOf(CameraFollowerScript)[0];
 
-            centerSun?.addEventListener("click", () => {
-                cameraHandler.lockCamera("sun")
-                targetBody = "Sun";
+            centerSelector.addEventListener("change", function() {
+                const selectedCenter = centerSelector.value;
+                const bodyName = selectedCenter.replace("center", "").toLowerCase();
+
+                if (bodyName === "camera") {
+                    cameraHandler.lockCamera(null);
+                    targetBody = "";
+                    console.log("Free Camera Movement");
+                } else {
+                    cameraHandler.lockCamera(bodyName);
+                    targetBody = selectedCenter.replace("center", "");
+                    console.log("Camera locked to: " + targetBody);
+                }
             });
-            centerMercury?.addEventListener("click", () => {
-                cameraHandler.lockCamera("mercury")
-                targetBody = "Mercury";
-            })
-            centerVenus?.addEventListener("click", () => {
-                cameraHandler.lockCamera("venus")
-                targetBody = "Venus";
-            })
-            centerEarth?.addEventListener("click", () => {
-                cameraHandler.lockCamera("earth")
-                targetBody = "Earth";
-            });
-            centerMars?.addEventListener("click", () => {
-                cameraHandler.lockCamera("mars")
-                targetBody = "Mars";
-            });
-            centerJupiter?.addEventListener("click", () => {
-                cameraHandler.lockCamera("jupiter")
-                targetBody = "Jupiter";
-            });
-            centerSaturn?.addEventListener("click", () => {
-                cameraHandler.lockCamera("saturn")
-                targetBody = "Saturn";
-            })
-            centerUranus?.addEventListener("click", () => {
-                cameraHandler.lockCamera("uranus")
-                targetBody = "Uranus";
-            })
-            centerNeptune?.addEventListener("click", () => {
-                cameraHandler.lockCamera("neptune")
-                targetBody = "Neptune";
-            })
-            centerPluto?.addEventListener("click", () => {
-                cameraHandler.lockCamera("pluto")
-                targetBody = "Pluto";
-            })
         }
+        
+        let isHelpMenuVisible = false;
+
+        function setupKeyboardShortcuts() {
+            document.addEventListener('keydown', (event) => {
+                if (!document.pointerLockElement && event.key === 'h') {
+                    isHelpMenuVisible = !isHelpMenuVisible;
+                    const helpMenu = document.getElementById('helpMenu');
+                    helpMenu.style.display = isHelpMenuVisible ? 'block' : 'none';
+                }
+            });
+        }
+
+        setupKeyboardShortcuts();
     }
 
     function updateInfoBox(target) {
         const infoHandler = scene.getInstancesOf(CelestialBodyScript)[0];
         const targetBody = infoHandler.getData(target);
         const infoContent = document.getElementById("infoContent");
-        if (!target) {
+        if (!target || !targetBody) {
             infoContent.innerHTML = `<strong>No data available.</strong>`;
             return;
         }
@@ -360,6 +610,50 @@ async function main() {
                 `;
     }
 
+    function updateScore() {
+        const scoreContent = document.getElementById("score");
+
+        scoreContent.innerHTML = `
+                <strong>Money on Ship:</strong> ${score.toFixed(2)} <strong>TL</strong><br>
+                <strong>Total Money:</strong> ${totalScore.toFixed(2)} <strong>TL</strong><br>
+                `;
+    }
+
+    function updateAstronauts() {
+        const astronauts = document.getElementById("astronauts");
+
+        const statusMap = {
+            0: "Not Rescued",
+            1: "On the Ship",
+            2: "Rescued"
+        };
+
+        const ardaStatus = statusMap[arda] || "Unknown Status";
+        const ismailStatus = statusMap[ismail] || "Unknown Status";
+        const yigitalpStatus = statusMap[yigitalp] || "Unknown Status";
+        const zaferStatus = statusMap[zafer] || "Unknown Status";
+
+        astronauts.innerHTML = `
+                <strong>Arda: </strong> ${ardaStatus} <br>
+                <strong>Ismail: </strong> ${ismailStatus} <br>
+                <strong>Yigitalp: </strong> ${yigitalpStatus} <br>
+                <strong>Zafer: </strong> ${zaferStatus} <br>
+                `;
+    }
+
+    function createAsteroid() {
+        if (asteroidCount >= maxAsteroids) return;
+
+        const asteroidMesh = new Mesh(meshMap["asteroidMesh"],gl);
+        const asteroidObject = new SceneObject(asteroidMesh, celestialShader);
+        BindSceneObject(asteroidObject, AsteroidScript);
+        sceneObjects.push(asteroidObject);
+
+        dispatchEvent(asteroidObject.startEvents);
+
+        asteroidCount++;
+    }
+
     function resizeCanvasToDisplaySize() {
         const displayWidth = window.innerWidth;
         const displayHeight = window.innerHeight;
@@ -383,7 +677,21 @@ async function main() {
 
         scene.Update();
 
-        updateInfoBox(targetBody)
+        if (timeStamp - lastAsteroidTime >= asteroidSpawnInterval) {
+            createAsteroid();
+            lastAsteroidTime = timeStamp;
+        }
+
+        if(
+            targetBody !== "Spaceship" &&
+            targetBody !== "Arda" &&
+            targetBody !== "Ismail" &&
+            targetBody !== "Yigitalp" &&
+            targetBody !== "Zafer" &&
+            targetBody !== "names")
+            updateInfoBox(targetBody)
+        updateScore();
+        updateAstronauts();
 
         requestAnimationFrame(render);
     }
