@@ -164,7 +164,7 @@ class SceneObject {
     scene;
 
     constructor(mesh, shader, transform = new Transform()) {
-        this.ID = Math.floor(Math.random() * 2**8);
+        this.ID = idGen.generate();
         this.Mesh = mesh;
         this.shader = shader;
         this.SceneObjectScripts = [];
