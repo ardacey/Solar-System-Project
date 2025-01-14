@@ -705,6 +705,9 @@ class CameraFollowerScript extends SceneObjectScript{
     }
 
     updateSpaceShipCameraVectors() {
+        if(this.targetBody)
+            this.camera.target = vec3.copy(vec3.create(),this.targetBody.transform.position);
+
         this.camera.updateCameraVectors()
 
         let behindPosition = vec3.create();
