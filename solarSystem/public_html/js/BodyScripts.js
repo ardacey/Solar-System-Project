@@ -692,7 +692,7 @@ class CameraFollowerScript extends SceneObjectScript{
 
     Update() {
         if(this.targetBody && this.targetObject !== "none")
-        this.camera.target = vec3.copy(this.targetBody.transform.position);
+        this.camera.target = vec3.copy(vec3.create(),this.targetBody.transform.position);
         if (this.targetObject === "spaceship") {
             this.updateSpaceShipCameraVectors();
         } else {
