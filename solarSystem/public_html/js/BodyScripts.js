@@ -692,14 +692,16 @@ class CameraFollowerScript extends SceneObjectScript{
     }
 
     Update() {
-        if(this.targetBody && this.targetObject !== "none")
-        this.camera.target = vec3.copy(vec3.create(),this.targetBody.transform.position);
+        if ( this.targetObject === "none") {
+            this.targetBody = null;
+        }
+
         if (this.targetObject === "spaceship") {
             this.updateSpaceShipCameraVectors();
         } else {
-            this.camera.updateCameraVectors();
-
+            this.updateCelestialCamera();
         }
+
     }
 
     updateSpaceShipCameraVectors() {
@@ -709,12 +711,21 @@ class CameraFollowerScript extends SceneObjectScript{
         vec3.scale(behindPosition, this.camera.front, -10);
 
         this.camera.position = vec3.add(vec3.create(), this.camera.target, behindPosition);
+    }
 
+    updateCelestialCamera() {
+        this.camera.updateCameraVectors()
+
+        if(this.targetBody)
+        this.targetBody.transform.position = vec3.copy(vec3.create(), this.camera.target);
     }
 
     lockCamera(targetObjectName){
         this.targetBody = this.potentialTargets[targetObjectName];
         this.targetObject = targetObjectName;
+
+        if(this.targetBody)
+            this.camera.target = vec3.copy(vec3.create(),this.targetBody.transform.position);
         console.log(this.targetBody);
     }
 }

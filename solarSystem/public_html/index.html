@@ -67,10 +67,57 @@
       padding: 5px 0;
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
+
+    /* Style the container to position the dropdown */
+    #centerSelectorContainer {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background-color: rgba(0, 0, 0, 0.6);
+        padding: 10px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        z-index: 100;
+    }
+
+    /* Style the label for the select element */
+    #centerSelectorContainer label {
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+        color: #ffffff;
+        margin-bottom: 5px;
+        display: block;
+    }
+
+    /* Style the select dropdown */
+    #centerSelector {
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+        padding: 5px;
+        background-color: #444444;
+        color: white;
+        border: 1px solid #666666;
+        border-radius: 4px;
+        width: 200px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    /* Hover effect on the select dropdown */
+    #centerSelector:hover {
+        background-color: #555555;
+    }
+
+    /* Focus effect for accessibility */
+    #centerSelector:focus {
+        outline: none;
+        border: 1px solid #00bcd4;
+        box-shadow: 0 0 5px rgba(0, 188, 212, 0.5);
+    }
   </style>
 </head>
 <body>
-<div style="position: absolute; top: 10px; left: 10px;">
+<div id="centerSelectorContainer">
     <label for="centerSelector"></label>
     <select id="centerSelector">
         <option value="centerSun">Center Sun</option>
