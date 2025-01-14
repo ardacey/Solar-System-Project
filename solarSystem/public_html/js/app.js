@@ -476,6 +476,7 @@ async function main() {
                             break;
                         case 'm':
                             manual = !manual;
+                            break;
                     }
                 }
                 if (event.key === 'k') {
@@ -535,84 +536,21 @@ async function main() {
 
         interfaceHandler();
         function interfaceHandler() {
-            const centerSun = document.getElementById("centerSun");
-            const centerMercury = document.getElementById("centerMercury");
-            const centerVenus = document.getElementById("centerVenus");
-            const centerEarth = document.getElementById("centerEarth");
-            const centerMars = document.getElementById("centerMars");
-            const centerJupiter = document.getElementById("centerJupiter");
-            const centerSaturn = document.getElementById("centerSaturn");
-            const centerUranus = document.getElementById("centerUranus");
-            const centerNeptune = document.getElementById("centerNeptune");
-            const centerPluto = document.getElementById("centerPluto");
-            const centerArda = document.getElementById("centerArda");
-            const centerIsmail = document.getElementById("centerIsmail");
-            const centerYigitalp = document.getElementById("centerYigitalp");
-            const centerZafer = document.getElementById("centerZafer");
-            const centerSpaceship = document.getElementById("centerSpaceship");
-
+            const centerSelector = document.getElementById("centerSelector");
             const cameraHandler = scene.getInstancesOf(CameraFollowerScript)[0];
 
-            centerSun?.addEventListener("click", () => {
-                cameraHandler.lockCamera("sun")
-                targetBody = "Sun";
+            centerSelector.addEventListener("change", function() {
+                const selectedCenter = centerSelector.value;
+                const bodyName = selectedCenter.replace("center", "").toLowerCase();
+
+                if (bodyName === "camera") {
+                    // TODO
+                } else {
+                    cameraHandler.lockCamera(bodyName);
+                    targetBody = selectedCenter.replace("center", "");
+                    console.log("Camera locked to: " + targetBody);
+                }
             });
-            centerMercury?.addEventListener("click", () => {
-                cameraHandler.lockCamera("mercury")
-                targetBody = "Mercury";
-            })
-            centerVenus?.addEventListener("click", () => {
-                cameraHandler.lockCamera("venus")
-                targetBody = "Venus";
-            })
-            centerEarth?.addEventListener("click", () => {
-                cameraHandler.lockCamera("earth")
-                targetBody = "Earth";
-            });
-            centerMars?.addEventListener("click", () => {
-                cameraHandler.lockCamera("mars")
-                targetBody = "Mars";
-            });
-            centerJupiter?.addEventListener("click", () => {
-                cameraHandler.lockCamera("jupiter")
-                targetBody = "Jupiter";
-            });
-            centerSaturn?.addEventListener("click", () => {
-                cameraHandler.lockCamera("saturn")
-                targetBody = "Saturn";
-            })
-            centerUranus?.addEventListener("click", () => {
-                cameraHandler.lockCamera("uranus")
-                targetBody = "Uranus";
-            })
-            centerNeptune?.addEventListener("click", () => {
-                cameraHandler.lockCamera("neptune")
-                targetBody = "Neptune";
-            })
-            centerPluto?.addEventListener("click", () => {
-                cameraHandler.lockCamera("pluto")
-                targetBody = "Pluto";
-            })
-            centerArda?.addEventListener("click", () => {
-                cameraHandler.lockCamera("arda")
-                targetBody = "Arda";
-            })
-            centerIsmail?.addEventListener("click", () => {
-                cameraHandler.lockCamera("ismail")
-                targetBody = "Ismail";
-            })
-            centerYigitalp?.addEventListener("click", () => {
-                cameraHandler.lockCamera("yigitalp")
-                targetBody = "Yigitalp";
-            })
-            centerZafer?.addEventListener("click", () => {
-                cameraHandler.lockCamera("zafer")
-                targetBody = "Zafer";
-            })
-            centerSpaceship?.addEventListener("click", () => {
-                cameraHandler.lockCamera("spaceship")
-                targetBody = "Spaceship";
-            })
         }
         
         let isHelpMenuVisible = false;

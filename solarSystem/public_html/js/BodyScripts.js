@@ -214,15 +214,14 @@ class PlanetScript extends CelestialBodyScript{
         const posVec = vec3.fromValues(x, 0, z);
         const posVec1 = vec3.fromValues(x1, 0, z1);
 
-        let angleVec = vec3.create();
-        let sunVec = vec3.create();
-        const sunPosition = vec3.create(0,0,0);
-        console.log(this.sceneObject.transform.position);
+        let angleVec = vec3.fromValues(0, 0, 0);
+        let sunVec = vec3.fromValues(0, 0, 0);
+        const sunPosition = vec3.fromValues(0, 0, 0);
 
         vec3.sub(sunVec, sunPosition, this.sceneObject.transform.position);
 
         console.log(sunVec);
-        vec3.scale(sunVec, sunVec, 0.003)
+        vec3.scale(sunVec, sunVec, 0.003);
         //sunVec = vec3.normalize(vec3.create(), sunVec);
 
         vec3.sub(angleVec, posVec1 , posVec);
@@ -231,17 +230,9 @@ class PlanetScript extends CelestialBodyScript{
 
         vec3.add(angleVec, angleVec, sunVec);
 
-        console.log(angleVec);
-        console.log("hebelek hübelek");
         const finalVec = vec3.create();
         vec3.add(finalVec, this.sceneObject.transform.position, angleVec);
         this.sceneObject.transform.position = finalVec;
-
-
-
-
-
-
     }
 
 
