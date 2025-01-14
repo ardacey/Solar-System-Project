@@ -120,9 +120,9 @@ class PlanetScript extends CelestialBodyScript{
     centralStar;
     speed;
     direction;
-    condition = false;
     orbitRadius;
-    orbitErrorMargin = 0.05;
+    orbitErrorMargin = 0.01;
+    physicDis;
 
 
     constructor(sceneObject, params) {
@@ -132,6 +132,7 @@ class PlanetScript extends CelestialBodyScript{
         this.speed = 0;
         this.direction = vec3.fromValues(0, 0, 1);
         this.orbitRadius = this.orbitalDistance * CelestialBodyScript.DISTANCE_SCALE;
+        this.physicDis = this.orbitalDistance * CelestialBodyScript.DISTANCE_SCALE * 0.98;
 
     }
 
@@ -145,8 +146,7 @@ class PlanetScript extends CelestialBodyScript{
     Update() {
         super.Update();
         this.updateTransform();
-        if (manual || this.condition) {
-            this.updateMouseTransform();
+        if (manual) {
             this.checkOrbitBoundary();
         }
         else this.updateOrbitalPosition();
@@ -169,13 +169,16 @@ class PlanetScript extends CelestialBodyScript{
 
     checkOrbitBoundary() {
         // Yörünge mesafesi ile gezegenin mevcut mesafesi arasındaki farkı hesapla
+
+        const deltaAngle = this.angularVelocity * time.deltaTime;
+        this.angle += deltaAngle;
+
         const currentDistance = vec3.length(this.sceneObject.transform.position);
         const lowerBound = this.orbitRadius * (1 - this.orbitErrorMargin); // %10 daha az
         const upperBound = this.orbitRadius * (1 + this.orbitErrorMargin); // %10 daha fazla
 
         if (currentDistance < lowerBound || currentDistance > upperBound) {
             // Yörüngeden sapma tespit edildi
-            this.condition = false;
 
             // Eğer gezegen çok yakına girerse (yıldızdan çok yakın)
             if (currentDistance < 25) { // 25 birim mesafe örnek olarak belirlenebilir
@@ -202,81 +205,45 @@ class PlanetScript extends CelestialBodyScript{
     }
 
     moveInDirection(towardsSun) {
-        // Gezegenin yörüngedeki konumunu alalım
-        const position = this.sceneObject.transform.position;
+        const scaledDistance = this.orbitalDistance * CelestialBodyScript.DISTANCE_SCALE;
+        const x = scaledDistance * Math.cos(this.angle);
+        const z = scaledDistance * Math.sin(this.angle);
+        const x1 = scaledDistance * Math.cos(this.angle + this.angularVelocity * time.deltaTime);
+        const z1 = scaledDistance * Math.sin(this.angle + this.angularVelocity * time.deltaTime);
 
-        // Yıldızın pozisyonu (0, 0, 0 kabul ediyoruz)
-        const sunPosition = vec3.fromValues(0, 0, 0);
+        const posVec = vec3.fromValues(x, 0, z);
+        const posVec1 = vec3.fromValues(x1, 0, z1);
 
-        // Pozisyona göre yön vektörünü hesaplayalım
-        const direction = vec3.create();
-        vec3.subtract(direction, sunPosition, position);  // Güneşe doğru yön
-        vec3.normalize(direction, direction);
+        let angleVec = vec3.create();
+        let sunVec = vec3.create();
+        const sunPosition = vec3.create(0,0,0);
+        console.log(this.sceneObject.transform.position);
 
-        // Eğer güneşe doğruysa, yön vektörünü ters çevirelim (güneşten uzaklaşma)
-        if (!towardsSun) {
-            vec3.scale(direction, direction, -1);
-        }
+        vec3.sub(sunVec, sunPosition, this.sceneObject.transform.position);
 
-        // Yön vektörünü hızla çarparak gezegenin hareketini gerçekleştirelim
-        const speed = 0.1; // Gezegenin hızını ayarlayalım
-        vec3.scale(direction, direction, speed);
+        console.log(sunVec);
+        vec3.scale(sunVec, sunVec, 0.003)
+        //sunVec = vec3.normalize(vec3.create(), sunVec);
 
-        // Gezegenin yeni pozisyonunu hesaplayalım
-        vec3.add(this.sceneObject.transform.position, this.sceneObject.transform.position, direction);
+        vec3.sub(angleVec, posVec1 , posVec);
+        vec3.scale(angleVec, angleVec, 30.)
+        //angleVec = vec3.normalize(vec3.create(), angleVec);
+
+        vec3.add(angleVec, angleVec, sunVec);
+
+        console.log(angleVec);
+        console.log("hebelek hübelek");
+        const finalVec = vec3.create();
+        vec3.add(finalVec, this.sceneObject.transform.position, angleVec);
+        this.sceneObject.transform.position = finalVec;
+
+
+
+
+
+
     }
 
-    updateSurfaceTemperature() {
-        if (!this.centralStar) return;
-
-        const distance = vec3.distance(
-            this.getScaledPosition(),
-            this.centralStar.sceneObject.transform.position
-        );
-
-        const albedo = 0.3;
-        const stefanBoltzmann = 5.67e-8;
-
-        const absorptionRate = (1 - albedo) * Math.PI * Math.pow(this.radius, 2);
-        const incidentPower = this.centralStar.getLightIntensityAtDistance(distance) * absorptionRate;
-
-        this.surfaceTemperature = Math.pow(
-            incidentPower / (4 * Math.PI * Math.pow(this.radius, 2) * stefanBoltzmann),
-            0.25
-        );
-    }
-
-    updateMouseTransform() {
-        const transform = this.sceneObject.transform;
-
-        // Yörüngenin alt ve üst sınırlarını hesaplayalım
-        const lowerBound = this.orbitalDistance * 0.95;  // Yörüngenin %95 alt sınırı
-        const upperBound = this.orbitalDistance * 1.05;  // Yörüngenin %105 üst sınırı
-
-        // Mevcut mesafeyi hesaplayalım
-        const currentDistance = vec3.length(transform.position);  // Gezegenin güneşe olan mesafesi
-
-        // Yörüngeden sapma durumunu kontrol edelim
-        if (currentDistance < lowerBound) {
-            // Eğer gezegen çok yakınsa, güneşe doğru hareket etmesi için yönü değiştir
-            const directionToSun = vec3.normalize(vec3.create(), transform.position);
-            vec3.scale(this.direction, directionToSun, 1);  // Güneşe doğru hareket et
-        } else if (currentDistance > upperBound) {
-            // Eğer gezegen çok uzaksa, güneşten uzaklaşması için yönü değiştir
-            const directionAwayFromSun = vec3.normalize(vec3.create(), transform.position);
-            vec3.scale(this.direction, directionAwayFromSun, -1);  // Güneşten uzaklaş
-        } else {
-            // Yörüngede kalıyorsa, normal hareket etmeye devam et
-            this.direction = vec3.fromValues(Math.cos(this.angle), 0, Math.sin(this.angle));
-        }
-
-        // Gezegeni yönlendirme ve hareket ettirme işlemi
-        transform.position = vec3.add(
-            transform.position,
-            transform.position,
-            vec3.scale(vec3.create(), this.direction, this.speed * time.deltaTime)
-        );
-    }
 
     moveFront() {this.speed = 0.5; this.direction = this.sceneObject.scene.camera.front;}
     moveBack(){this.speed = -0.5; this.direction = this.sceneObject.scene.camera.front;}

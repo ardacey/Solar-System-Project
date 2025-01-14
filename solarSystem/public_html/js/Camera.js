@@ -96,8 +96,8 @@ class Camera{
 
     processZoom(yoffset){
         this.zoom -= yoffset;
-        if(this.zoom < 0.1) this.zoom = 0.1;
-        if(this.zoom > 45.0) this.zoom = 45.0;
+        if(this.zoom < 0.01) this.zoom = 0.01;
+        if(this.zoom > 450.0) this.zoom = 450.0;
     }
 
 }
