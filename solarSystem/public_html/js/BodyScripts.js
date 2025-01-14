@@ -66,6 +66,7 @@ class CelestialBodyScript extends SceneObjectScript {
     }
 
     getData(targetObjectName) {
+        if (!targetObjectName) return;
         const celestialBodies = this.sceneObject.scene.getInstancesOf(CelestialBodyScript);
         const targetBody = celestialBodies.find(body => body.name === targetObjectName);
 

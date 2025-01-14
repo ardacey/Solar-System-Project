@@ -544,7 +544,9 @@ async function main() {
                 const bodyName = selectedCenter.replace("center", "").toLowerCase();
 
                 if (bodyName === "camera") {
-                    // TODO
+                    cameraHandler.lockCamera(null);
+                    targetBody = "";
+                    console.log("Free Camera Movement");
                 } else {
                     cameraHandler.lockCamera(bodyName);
                     targetBody = selectedCenter.replace("center", "");
@@ -572,7 +574,7 @@ async function main() {
         const infoHandler = scene.getInstancesOf(CelestialBodyScript)[0];
         const targetBody = infoHandler.getData(target);
         const infoContent = document.getElementById("infoContent");
-        if (!target) {
+        if (!target || !targetBody) {
             infoContent.innerHTML = `<strong>No data available.</strong>`;
             return;
         }
