@@ -100,7 +100,6 @@ class StarScript extends CelestialBodyScript {
     Update() {
         super.Update();
         this.totalTime+=time.deltaTime/1000;
-        this.sceneObject.scale = 1000;
         this.sceneObject.shader.setUniform1f("time" , this.totalTime);
         this.sceneObject.shader.setUniform1f("highTemp" , 5700);
         this.sceneObject.shader.setUniform1f("lowTemp" , 500);
@@ -149,12 +148,7 @@ class PlanetScript extends CelestialBodyScript{
 
     Update() {
         super.Update();
-        // this.updateTransform();
-        // if (manual) {
-        //     this.checkOrbitBoundary();
-        // }
-        // else this.updateOrbitalPosition();
-        // this.updateSurfaceTemperature();
+        this.updateTransform();
     }
 
     updateOrbitalPosition() {
@@ -703,8 +697,16 @@ class CameraFollowerScript extends SceneObjectScript{
 
         if (this.targetObject === "spaceship") {
             this.updateSpaceShipCameraVectors();
-        } else {
-            this.updateCelestialCamera();
+        } else if (this.targetBody) {
+            let rigidBody = this.targetBody.getInstance(RigidBody);
+            rigidBody.isStatic = manual;
+            if (manual){
+                this.updateStaticCelestialCamera();
+            }
+            else this.updateCelestialCamera();
+
+        }else {
+            this.camera.updateCameraVectors();
         }
 
     }
@@ -721,11 +723,18 @@ class CameraFollowerScript extends SceneObjectScript{
         this.camera.position = vec3.add(vec3.create(), this.camera.target, behindPosition);
     }
 
-    updateCelestialCamera() {
+    updateStaticCelestialCamera() {
         this.camera.updateCameraVectors()
 
         if(this.targetBody)
         this.targetBody.transform.position = vec3.copy(vec3.create(), this.camera.target);
+    }
+
+    updateCelestialCamera() {
+        if(this.targetBody)
+            this.camera.target = vec3.copy(vec3.create(),this.targetBody.transform.position);
+
+        this.camera.updateCameraVectors()
     }
 
     lockCamera(targetObjectName){
@@ -735,5 +744,18 @@ class CameraFollowerScript extends SceneObjectScript{
         if(this.targetBody)
             this.camera.target = vec3.copy(vec3.create(),this.targetBody.transform.position);
         console.log(this.targetBody);
+    }
+}
+
+class HaloScript extends CelestialBodyScript {
+    constructor(sceneObject, param, sunObject) {
+        super(sceneObject, param);
+        this.sunObject = sunObject;
+    }
+
+    Update() {
+
+        super.Update();
+        this.sceneObject.transform.position = this.sunObject.transform.position;
     }
 }

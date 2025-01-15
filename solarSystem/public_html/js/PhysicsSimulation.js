@@ -178,7 +178,13 @@ class RigidBody extends SceneObjectScript{
 
     Update() {
         super.Update();
-        vec3.scale(this.sceneObject.transform.position, this.position, CelestialBodyScript.DISTANCE_SCALE);
+
+        if(!this.isStatic){
+            vec3.scale(this.sceneObject.transform.position, this.position, CelestialBodyScript.DISTANCE_SCALE);
+        }
+        else {
+            vec3.scale(this.position, this.sceneObject.transform.position , 1/CelestialBodyScript.DISTANCE_SCALE);
+        }
     }
 
     simulatePhysics(timeStep, subStep = 1) {
@@ -196,9 +202,7 @@ class RigidBody extends SceneObjectScript{
 
     }
 
-    toPosition(position){
-        vec3.scale(this.position, position , 1/CelestialBodyScript.DISTANCE_SCALE);
-    }
+
 
     simForce() {
         this.acceleration = vec3.scale(vec3.create(), this.force, 1/this.mass);
@@ -211,6 +215,7 @@ class RigidBody extends SceneObjectScript{
 
         let xdt = vec3.scale(vec3.create(), this.velocity, sdt);
         vec3.add(this.position,this.position,xdt);
-        console.log(this.velocity)
+        if (this.isStatic) console.log("Yeter amk")
+        // console.log(this.velocity)
     }
 }

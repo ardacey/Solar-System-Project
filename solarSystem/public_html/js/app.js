@@ -20,6 +20,7 @@ let yigitalp = 0;
 let zafer = 0;
 
 let manual = false;
+let massMultiplier = 1;
 
 function clearGlBuffer(gl){
     gl.clearColor(0.0,0.0,0.0,1.0);
@@ -285,8 +286,7 @@ async function main() {
         gl.cullFace(gl.BACK);
         const haloMesh = new Mesh(meshMap["sunMesh"],gl);
         const haloObject = new SceneObject(haloMesh, haloShader);
-
-        BindSceneObject(haloObject, StarScript, [BodyProperties.Halo]);
+        BindSceneObject(haloObject, HaloScript, [BodyProperties.Halo, sunObject]);
         sceneObjects.push(haloObject);
 
         for(let i = 0; i < 25; i++) createAsteroid();
@@ -335,7 +335,8 @@ async function main() {
             yigitalp:yigitalpObject,
             zafer:zaferObject,
             spaceship:spaceshipObject,
-            names:anotherSpaceshipObject
+            names:anotherSpaceshipObject,
+            none:null
         }]);
         sceneObjects.push(cameraObject);
 
@@ -498,6 +499,18 @@ async function main() {
                     targetBody = selectedCenter.replace("center", "");
                     console.log("Camera locked to: " + targetBody);
                 }
+                massMultiplier = 1;
+                const massValue = document.getElementById('massValue');
+                const massSelector = document.getElementById("massRange");
+                massSelector.value = 1;
+                massValue.textContent = massMultiplier;
+            });
+
+            const massSelector = document.getElementById("massRange");
+            const massValue = document.getElementById('massValue');
+            massSelector.addEventListener("change", function() {
+                massMultiplier = massSelector.value;
+                massValue.textContent = massMultiplier;
             });
         }
         
