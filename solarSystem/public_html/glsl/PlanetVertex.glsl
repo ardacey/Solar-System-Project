@@ -15,7 +15,7 @@ out vec3 WorldPos;
 void main() {
     WorldPos = vec3(model * vec4(aPos, 1.0));
     FragPos = vec3(model * vec4(aPos, 1.0));
-    // Better normal transformation
+
     Normal = normalize(mat3(transpose(inverse(model))) * aNormal);
     TexCoords = vec2(aTextCoord.x, 1.0 - aTextCoord.y);
 

@@ -21,7 +21,7 @@ const BodyProperties = {
         obliquity: 7.25,
         argumentOfObliquity: 0,
         yaw: 0,
-        luminosity: 3.828e26
+        luminosity:3.828e26
     },
     Mercury: {
         name: "Mercury",

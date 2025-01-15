@@ -10,6 +10,7 @@ class CelestialBodyScript extends SceneObjectScript {
     argumentOfObliquity;
     yaw;
     rotation;
+    totalTime = 0;
 
 
     // Scaling factors
@@ -25,11 +26,6 @@ class CelestialBodyScript extends SceneObjectScript {
     Start() {
         super.Start();
     }
-
-    totalTime = 0;
-
-
-
 
     Update() {
         super.Update();
@@ -50,15 +46,6 @@ class CelestialBodyScript extends SceneObjectScript {
             this.rotation.x,
             this.rotation.y,
             this.rotation.z
-        );
-    }
-
-    getScaledPosition() {
-        const transform = this.sceneObject.transform;
-        return vec3.scale(
-            vec3.create(),
-            transform.position,
-            CelestialBodyScript.DISTANCE_SCALE
         );
     }
 
@@ -117,17 +104,13 @@ class StarScript extends CelestialBodyScript {
         // this.updateSurfaceTemperature();
     }
 
-    getLightIntensityAtDistance(distance) {
-        return (this.luminosity) / (4 * Math.PI * distance * distance);
-    }
-
 }
 
 class PlanetScript extends CelestialBodyScript{
     orbitalPeriod;
     orbitalDistance;
     angle;
-    centralStar;
+    // centralStar;
     speed;
     direction;
     orbitRadius;
@@ -174,70 +157,6 @@ class PlanetScript extends CelestialBodyScript{
         this.sceneObject.transform.position = vec3.fromValues(x, 0, z);
 
     }
-
-    checkOrbitBoundary() {
-        const deltaAngle = this.angularVelocity * time.deltaTime;
-        this.angle += deltaAngle;
-
-        const currentDistance = vec3.length(this.sceneObject.transform.position);
-        const lowerBound = this.orbitRadius * (1 - this.orbitErrorMargin);
-        const upperBound = this.orbitRadius * (1 + this.orbitErrorMargin); 
-
-        if (currentDistance < lowerBound || currentDistance > upperBound) {
-            // Eğer gezegen çok yakına girerse
-            if (currentDistance < 25) {
-                console.log("Gezegen yıldıza çekildi ve yok oldu");
-                this.sceneObject.scene.listOfSceneObjects.splice(this.sceneObject.scene.listOfSceneObjects.indexOf(this.sceneObject), 1);
-            } else {
-                // Yörüngeden çıkarsa gezegenin doğru yöne hareketi
-                this.moveTowardsSun(currentDistance, lowerBound, upperBound);
-            }
-        }
-    }
-
-    moveTowardsSun(currentDistance, lowerBound, upperBound) {
-        if (currentDistance < lowerBound) {
-            console.log("Gezegen güneşe doğru hareket ediyor");
-            this.moveInDirection(true);
-        }
-        else if (currentDistance > upperBound) {
-            console.log("Gezegen güneşten uzaklaşıyor");
-            this.moveInDirection(false);
-        }
-    }
-
-    moveInDirection(towardsSun) {
-        const scaledDistance = this.orbitalDistance * CelestialBodyScript.DISTANCE_SCALE;
-        const x = scaledDistance * Math.cos(this.angle);
-        const z = scaledDistance * Math.sin(this.angle);
-        const x1 = scaledDistance * Math.cos(this.angle + this.angularVelocity * time.deltaTime);
-        const z1 = scaledDistance * Math.sin(this.angle + this.angularVelocity * time.deltaTime);
-
-        const posVec = vec3.fromValues(x, 0, z);
-        const posVec1 = vec3.fromValues(x1, 0, z1);
-
-        let angleVec = vec3.fromValues(0, 0, 0);
-        let sunVec = vec3.fromValues(0, 0, 0);
-        const sunPosition = vec3.fromValues(0, 0, 0);
-
-        vec3.sub(sunVec, sunPosition, this.sceneObject.transform.position);
-
-        console.log(sunVec);
-        vec3.scale(sunVec, sunVec, 0.003);
-        //sunVec = vec3.normalize(vec3.create(), sunVec);
-
-        vec3.sub(angleVec, posVec1 , posVec);
-        vec3.scale(angleVec, angleVec, 30.)
-        //angleVec = vec3.normalize(vec3.create(), angleVec);
-
-        vec3.add(angleVec, angleVec, sunVec);
-
-        const finalVec = vec3.create();
-        vec3.add(finalVec, this.sceneObject.transform.position, angleVec);
-        this.sceneObject.transform.position = finalVec;
-    }
-
-
     moveFront() {this.speed = 0.5; this.direction = this.sceneObject.scene.camera.front;}
     moveBack(){this.speed = -0.5; this.direction = this.sceneObject.scene.camera.front;}
     moveRight(){this.speed = 0.5; this.direction = this.sceneObject.scene.camera.right;}
@@ -459,7 +378,6 @@ class SpaceshipScript extends SceneObjectScript {
         let cameraDirection = this.sceneObject.scene.camera.front;
         let direction = vec3.fromValues(0, 0, 1);
         let rotation = this.calculateEulerAngles(direction, cameraDirection);
-
 
         this.getTransform().rotation = rotation;
 
@@ -761,7 +679,7 @@ class HaloScript extends CelestialBodyScript {
         this.sceneObject.transform.position = this.sunObject.transform.position;}}
 
 
-    class MakeEverythingSun {
+class MakeEverythingSun {
     constructor(sceneObject, sunShader, planetShader) {
         this.sceneObject = sceneObject
         this.effectedObjects = []

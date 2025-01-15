@@ -69,10 +69,10 @@ class SceneObjectScript{
  * @param {SceneObject} SceneObject scene object to bind this behavior
  * @param {SceneClass} SceneClass behavior to bind
  * @param {array} params dynamic parameters of SceneClass. It takes only enough params. If 1 is enough but
- * 2 is suplied only the firs one accepted
+ * 2 is suplied only the first one accepted
  *
  * A simple example:
- *         BindSceneObject(sceneObjects[2], ZoomInOut,[-200]);
+ *         BindSceneObject(sceneObject, ZoomInOut,[-200]);
  *
  */
 function BindSceneObject(SceneObject, SceneClass, params = undefined){
@@ -82,13 +82,6 @@ function BindSceneObject(SceneObject, SceneClass, params = undefined){
     }
     else{
     return new SceneClass(SceneObject);
-    }
-}
-
-//DO NOT USE, Not Complete
-function BindSceneObjectMultiple(SceneObjects, SceneClasses, params){
-    for(let i=0; i<SceneClasses.length;i++){
-        BindSceneObject(SceneObjects[i], SceneClasses[i], params[i]);
     }
 }
 
@@ -150,8 +143,6 @@ class Scene {
         }
         return returnElements;
     }
-
-
 }
 
 class SceneObject {
@@ -425,78 +416,5 @@ class Mesh{
         }
 
         return center; // Return the offset in case it's needed
-    }
-
-    static createSphereMesh(gl,radius = 15, latitudeBands=30, longitudeBands=30) {
-        const positions = [];
-        const normals = [];
-        //const textureCoordData = [];
-        const indices = [];
-
-        // Generate vertices
-        for (let latNumber = 0; latNumber <= latitudeBands; latNumber++) {
-            // Calculate the current latitude angle
-            const theta = latNumber * Math.PI / latitudeBands;
-            const sinTheta = Math.sin(theta);
-            const cosTheta = Math.cos(theta);
-
-            for (let longNumber = 0; longNumber <= longitudeBands; longNumber++) {
-                // Calculate the current longitude angle
-                const phi = longNumber * 2 * Math.PI / longitudeBands;
-                const sinPhi = Math.sin(phi);
-                const cosPhi = Math.cos(phi);
-
-                // Calculate the vertex position
-                const x = cosPhi * sinTheta;
-                const y = cosTheta;
-                const z = sinPhi * sinTheta;
-
-                // Calculate texture coordinates
-                // UV mapping for a sphere using spherical coordinates
-                //const u = 1 - (longNumber / longitudeBands); // Longitude mapped to U (0 to 1)
-                //const v = latNumber / latitudeBands;         // Latitude mapped to V (0 to 1)
-
-                // Add vertex data
-                positions.push(radius * x);
-                positions.push(radius * y);
-                positions.push(radius * z);
-
-                // Add normal data (normalized vertex position)
-                normals.push(x);
-                normals.push(y);
-                normals.push(z);
-
-                // Add texture coordinates
-                //textureCoordData.push(u);
-                //textureCoordData.push(v);
-            }
-        }
-
-        // Generate indices
-        for (let latNumber = 0; latNumber < latitudeBands; latNumber++) {
-            for (let longNumber = 0; longNumber < longitudeBands; longNumber++) {
-                const first = latNumber * (longitudeBands + 1) + longNumber;
-                const second = first + longitudeBands + 1;
-
-                // First triangle
-                indices.push(first);
-                indices.push(first + 1);
-                indices.push(second);
-
-                // Second triangle
-                indices.push(second);
-                indices.push(first + 1);
-                indices.push(second + 1);
-            }
-        }
-
-        let meshData = {
-            positions: new Float32Array(positions),
-            normals: new Float32Array(normals),
-            // textureCoords: new Float32Array(textureCoordData),
-            indices: new Uint16Array(indices)
-        };
-
-        return new Mesh(meshData,gl);
     }
 }

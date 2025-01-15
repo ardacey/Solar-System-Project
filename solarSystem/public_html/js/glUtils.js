@@ -1,4 +1,3 @@
-
 const mat4 = glMatrix.mat4;
 const mat3 = glMatrix.mat3;
 const vec3 = glMatrix.vec3;
@@ -6,7 +5,6 @@ const vec4 = glMatrix.vec4;
 const gl_Matrix = glMatrix.glMatrix;
 const twgl = window.twgl;
 const OBJ = window.OBJ;
-const CANNON = window.CANNON;
 
 async function ReadFile(filePath) {
     const response = await fetch(filePath);
@@ -20,12 +18,6 @@ async function initShader(vertexShaderPath, fragmentShaderPath, gl) {
     return new Shader(vertexCode, fragmentCode,gl);
 }
 
-
-function loadMeshData(objString, gl) {
-    let obj = new OBJ.Mesh(objString);
-    console.log(obj);
-    return new Mesh(obj,gl);
-}
 
 function drawBufferInfo(gl, bufferInfo, type, count, offset, instanceCount) {
     type = type === undefined ? gl.TRIANGLES : type;
