@@ -131,17 +131,6 @@ async function main() {
         sceneObjects.push(sunObject);
         const sunScript = sunObject.SceneObjectScripts.find(script => script instanceof StarScript);
 
-        // Create Halo
-        gl.enable(gl.BLEND);
-        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-        gl.enable(gl.CULL_FACE);
-        gl.cullFace(gl.FRONT);
-        const haloMesh = new Mesh(meshMap["sunMesh"],gl);
-        const haloObject = new SceneObject(haloMesh, haloShader);
-
-        BindSceneObject(haloObject, StarScript, [BodyProperties.Halo]);
-        sceneObjects.push(haloObject);
-
         // Create Mercury
         const mercuryMesh = new Mesh(meshMap["mercuryMesh"],gl);
         const mercuryObject = new SceneObject(mercuryMesh, celestialShader);
@@ -280,6 +269,17 @@ async function main() {
         const spaceshipScript = BindSceneObject(spaceshipObject, SpaceshipScript, [BodyProperties.Spaceship]);
         spaceshipScript.centralStar = sunScript;
         sceneObjects.push(spaceshipObject);
+
+        // Create Halo ( Ensure halo is the last rendered )
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+        gl.enable(gl.CULL_FACE);
+        gl.cullFace(gl.FRONT);
+        const haloMesh = new Mesh(meshMap["sunMesh"],gl);
+        const haloObject = new SceneObject(haloMesh, haloShader);
+
+        BindSceneObject(haloObject, StarScript, [BodyProperties.Halo]);
+        sceneObjects.push(haloObject);
 
         for(let i = 0; i < 25; i++) createAsteroid();
 
