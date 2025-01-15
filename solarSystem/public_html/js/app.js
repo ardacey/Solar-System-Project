@@ -83,7 +83,7 @@ async function main() {
 
     async function setupScene() {
         // Initialize shaders
-        celestialShader = await initShader("glsl/SunVertex.glsl", "glsl/SunFragment.glsl", gl);
+        celestialShader = await initShader("glsl/PlanetVertex.glsl", "glsl/PlanetFragment.glsl", gl);
         const sunShader = await initShader("glsl/test2vertex.glsl", "glsl/test2frag.glsl", gl);
         const haloShader = await initShader("glsl/haloVertex.glsl", "glsl/haloFrag.glsl", gl);
         const skyboxShader = await initShader("glsl/skybox-vertex.glsl", "glsl/skybox-fragment.glsl", gl);
@@ -138,7 +138,7 @@ async function main() {
         const mercuryMesh = new Mesh(meshMap["mercuryMesh"],gl);
         const mercuryObject = new SceneObject(mercuryMesh, celestialShader);
         const mercuryScript = BindSceneObject(mercuryObject, PlanetScript, [BodyProperties.Mercury]);
-        //BindSceneObject(mercuryObject, RigidBody);
+        BindSceneObject(mercuryObject, RigidBody);
 
         mercuryScript.centralStar = sunScript;
         sceneObjects.push(mercuryObject);
@@ -152,7 +152,7 @@ async function main() {
         const venusMesh = new Mesh(meshMap["venusMesh"],gl);
         const venusObject = new SceneObject(venusMesh, celestialShader);
         const venusScript = BindSceneObject(venusObject, PlanetScript, [BodyProperties.Venus]);
-        //BindSceneObject(venusObject, RigidBody);
+        BindSceneObject(venusObject, RigidBody);
 
         venusScript.centralStar = sunScript;
         sceneObjects.push(venusObject);
@@ -180,6 +180,8 @@ async function main() {
         const marsMesh = new Mesh(meshMap["marsMesh"],gl);
         const marsObject = new SceneObject(marsMesh, celestialShader);
         const marsScript = BindSceneObject(marsObject, PlanetScript, [BodyProperties.Mars]);
+        BindSceneObject(marsObject, RigidBody);
+
         marsScript.centralStar = sunScript;
         sceneObjects.push(marsObject);
 
@@ -192,6 +194,8 @@ async function main() {
         const jupiterMesh = new Mesh(meshMap["jupiterMesh"],gl);
         const jupiterObject = new SceneObject(jupiterMesh, celestialShader);
         const jupiterScript = BindSceneObject(jupiterObject, PlanetScript, [BodyProperties.Jupiter]);
+        BindSceneObject(jupiterObject, RigidBody);
+
         jupiterScript.centralStar = sunScript;
         sceneObjects.push(jupiterObject);
 
@@ -204,6 +208,8 @@ async function main() {
         const saturnMesh = new Mesh(meshMap["saturnMesh"],gl);
         const saturnObject = new SceneObject(saturnMesh, celestialShader);
         const saturnScript = BindSceneObject(saturnObject, PlanetScript, [BodyProperties.Saturn]);
+        BindSceneObject(saturnObject, RigidBody);
+
         saturnScript.centralStar = sunScript;
         sceneObjects.push(saturnObject);
 
@@ -216,6 +222,8 @@ async function main() {
         const uranusMesh = new Mesh(meshMap["uranusMesh"],gl);
         const uranusObject = new SceneObject(uranusMesh, celestialShader);
         const uranusScript = BindSceneObject(uranusObject, PlanetScript, [BodyProperties.Uranus]);
+        BindSceneObject(uranusObject, RigidBody);
+
         uranusScript.centralStar = sunScript;
         sceneObjects.push(uranusObject);
 
@@ -228,6 +236,8 @@ async function main() {
         const neptuneMesh = new Mesh(meshMap["neptuneMesh"],gl);
         const neptuneObject = new SceneObject(neptuneMesh, celestialShader);
         const neptuneScript = BindSceneObject(neptuneObject, PlanetScript, [BodyProperties.Neptune]);
+        BindSceneObject(neptuneObject, RigidBody);
+
         neptuneScript.centralStar = sunScript;
         sceneObjects.push(neptuneObject);
 
@@ -240,6 +250,8 @@ async function main() {
         const plutoMesh = new Mesh(meshMap["plutoMesh"],gl);
         const plutoObject = new SceneObject(plutoMesh, celestialShader);
         const plutoScript = BindSceneObject(plutoObject, PlanetScript, [BodyProperties.Pluto]);
+        BindSceneObject(plutoObject, RigidBody);
+
         plutoScript.centralStar = sunScript;
         sceneObjects.push(plutoObject);
 
@@ -276,6 +288,8 @@ async function main() {
         const spaceshipMesh = new Mesh(meshMap["spaceshipMesh"],gl);
         const spaceshipObject = new SceneObject(spaceshipMesh, celestialShader);
         const spaceshipScript = BindSceneObject(spaceshipObject, SpaceshipScript, [BodyProperties.Spaceship]);
+        BindSceneObject(spaceshipObject, RigidBody);
+
         spaceshipScript.centralStar = sunScript;
         sceneObjects.push(spaceshipObject);
 
