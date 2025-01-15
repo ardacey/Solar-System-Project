@@ -84,6 +84,7 @@ async function main() {
         // Initialize shaders
         celestialShader = await initShader("glsl/SunVertex.glsl", "glsl/SunFragment.glsl", gl);
         const sunShader = await initShader("glsl/test2vertex.glsl", "glsl/test2frag.glsl", gl);
+        const haloShader = await initShader("glsl/haloVertex.glsl", "glsl/haloFrag.glsl", gl);
         const skyboxShader = await initShader("glsl/skybox-vertex.glsl", "glsl/skybox-fragment.glsl", gl);
         const orbitShader = await initShader("glsl/orbitVertex.glsl", "glsl/orbitFragment.glsl", gl);
         shapeShader = await initShader("glsl/ShapeVertex.glsl", "glsl/ShapeFragment.glsl", gl)
@@ -205,6 +206,17 @@ async function main() {
         BindSceneObject(sunObject, StarScript, [BodyProperties.Sun]);
         sceneObjects.push(sunObject);
         const sunScript = sunObject.SceneObjectScripts.find(script => script instanceof StarScript);
+
+        // Create Halo
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+        gl.enable(gl.CULL_FACE);
+        gl.cullFace(gl.FRONT);
+        const haloMesh = new Mesh(meshMap["sunMesh"],gl);
+        const haloObject = new SceneObject(haloMesh, haloShader);
+
+        BindSceneObject(haloObject, StarScript, [BodyProperties.Halo]);
+        sceneObjects.push(haloObject);
 
         // Create Mercury
         const mercuryMesh = new Mesh(meshMap["mercuryMesh"],gl);

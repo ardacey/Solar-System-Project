@@ -11,6 +11,18 @@ const BodyProperties = {
         yaw: 0,
         luminosity: 3.828e26
     },
+    Halo: {
+        name: "Halo",
+        mass: 0.0,
+        radius: 1096340000,
+        surfaceTemperature: 5778,
+        angularVelocity: 0,
+        rotationPeriod: 25.38 * 24 * 360,
+        obliquity: 7.25,
+        argumentOfObliquity: 0,
+        yaw: 0,
+        luminosity: 3.828e26
+    },
     Mercury: {
         name: "Mercury",
         mass: 3.301e23,
