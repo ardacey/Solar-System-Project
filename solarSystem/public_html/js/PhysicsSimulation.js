@@ -169,6 +169,10 @@ class RigidBody extends SceneObjectScript{
         // Set mass and other parameters
         this.mass = sceneObject.getInstance(CelestialBodyScript)?.mass;
 
+        if(isNaN(this.mass)){
+            this.mass = 100;
+        }
+
         Object.assign(this, params);
     }
 
@@ -216,6 +220,5 @@ class RigidBody extends SceneObjectScript{
 
         let xdt = vec3.scale(vec3.create(), this.velocity, sdt);
         vec3.add(this.position,this.position,xdt);
-        console.log(this.velocity)
     }
 }
