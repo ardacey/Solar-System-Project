@@ -164,39 +164,33 @@ class PlanetScript extends CelestialBodyScript{
     }
 
     checkOrbitBoundary() {
-        // Yörünge mesafesi ile gezegenin mevcut mesafesi arasındaki farkı hesapla
-
         const deltaAngle = this.angularVelocity * time.deltaTime;
         this.angle += deltaAngle;
 
         const currentDistance = vec3.length(this.sceneObject.transform.position);
-        const lowerBound = this.orbitRadius * (1 - this.orbitErrorMargin); // %10 daha az
-        const upperBound = this.orbitRadius * (1 + this.orbitErrorMargin); // %10 daha fazla
+        const lowerBound = this.orbitRadius * (1 - this.orbitErrorMargin);
+        const upperBound = this.orbitRadius * (1 + this.orbitErrorMargin); 
 
         if (currentDistance < lowerBound || currentDistance > upperBound) {
-            // Yörüngeden sapma tespit edildi
-
-            // Eğer gezegen çok yakına girerse (yıldızdan çok yakın)
-            if (currentDistance < 25) { // 25 birim mesafe örnek olarak belirlenebilir
+            // Eğer gezegen çok yakına girerse
+            if (currentDistance < 25) {
                 console.log("Gezegen yıldıza çekildi ve yok oldu");
                 this.sceneObject.scene.listOfSceneObjects.splice(this.sceneObject.scene.listOfSceneObjects.indexOf(this.sceneObject), 1);
             } else {
-                // Yörüngeden çıkarsa gezegenin doğru yöne hareket etmesi sağlanacak
+                // Yörüngeden çıkarsa gezegenin doğru yöne hareketi
                 this.moveTowardsSun(currentDistance, lowerBound, upperBound);
             }
         }
     }
 
     moveTowardsSun(currentDistance, lowerBound, upperBound) {
-        // Eğer gezegen lowerBound'dan küçükse, güneşe doğru hareket etsin
         if (currentDistance < lowerBound) {
             console.log("Gezegen güneşe doğru hareket ediyor");
-            this.moveInDirection(true); // Güneşe doğru
+            this.moveInDirection(true);
         }
-        // Eğer gezegen upperBound'dan büyükse, güneşten uzaklaşarak hareket etsin
         else if (currentDistance > upperBound) {
             console.log("Gezegen güneşten uzaklaşıyor");
-            this.moveInDirection(false); // Güneşten uzaklaşarak
+            this.moveInDirection(false);
         }
     }
 
@@ -311,7 +305,7 @@ class SkyboxScript extends SceneObjectScript {
 
         // Create skybox geometry (cube)
         const arrays = {
-            aPosition: {  // Note: changed from 'position' to match shader attribute name
+            aPosition: { 
                 numComponents: 3,
                 data: new Float32Array([
                     // Front face
@@ -373,23 +367,18 @@ class SkyboxScript extends SceneObjectScript {
             return;
         }
 
-        // Save current GL state
         const currentDepthFunc = gl.getParameter(gl.DEPTH_FUNC);
 
-        // Configure GL state for skybox
         gl.depthFunc(gl.LEQUAL);
         gl.disable(gl.CULL_FACE);
 
-        // Use shader program
         gl.useProgram(this.programInfo.program);
 
-        // Remove translation from view matrix for skybox
         const viewMatrix = mat4.clone(this.sceneObject.scene.camera.getViewMatrix());
         viewMatrix[12] = 0;
         viewMatrix[13] = 0;
         viewMatrix[14] = 0;
 
-        // Set uniforms using TWGL
         const uniforms = {
             uProjectionMatrix: this.sceneObject.scene.getProjectionMatrix(),
             uViewMatrix: viewMatrix,
@@ -398,11 +387,9 @@ class SkyboxScript extends SceneObjectScript {
 
 
         try {
-            // Set buffers and uniforms
             twgl.setBuffersAndAttributes(gl, this.programInfo, this.bufferInfo);
             twgl.setUniforms(this.programInfo, uniforms);
 
-            // Draw
             gl.depthMask(false);
             twgl.drawBufferInfo(gl, this.bufferInfo);
             gl.depthMask(true);
@@ -465,7 +452,6 @@ class SpaceshipScript extends SceneObjectScript {
     }
 
     calculateEulerAngles(currentDir, targetDir) {
-        // Normalize vectors
         const current = vec3.create();
         const target = vec3.create();
         vec3.normalize(current, currentDir);
@@ -479,7 +465,7 @@ class SpaceshipScript extends SceneObjectScript {
         const targetPitch = Math.asin(-target[1]);
         const pitch = targetPitch - currentPitch;
 
-        // For this implementation, we assume no roll (Z-axis rotation) is needed
+        // no roll (Z-axis rotation) is needed
         const roll = 0;
 
         const toDegrees = angle => angle * (180 / Math.PI);
@@ -657,7 +643,7 @@ class AstronautScript extends SceneObjectScript{
         const targetPitch = Math.asin(-target[1]);
         const pitch = targetPitch - currentPitch;
 
-        // For this implementation, we assume no roll (Z-axis rotation) is needed
+        //no roll (Z-axis rotation) is needed
         const roll = 0;
 
         const toDegrees = angle => angle * (180 / Math.PI);
