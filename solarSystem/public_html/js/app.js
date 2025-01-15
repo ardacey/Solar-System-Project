@@ -82,7 +82,8 @@ async function main() {
 
     async function setupScene() {
         // Initialize shaders
-        celestialShader = await initShader("glsl/SunVertex.glsl", "glsl/SunFragment.glsl", gl);
+        //celestialShader = await initShader("glsl/SunVertex.glsl", "glsl/SunFragment.glsl", gl);
+        celestialShader = await initShader("glsl/test3vertex.glsl", "glsl/test3fragment.glsl", gl);
         const sunShader = await initShader("glsl/test2vertex.glsl", "glsl/test2frag.glsl", gl);
         const skyboxShader = await initShader("glsl/skybox-vertex.glsl", "glsl/skybox-fragment.glsl", gl);
         const orbitShader = await initShader("glsl/orbitVertex.glsl", "glsl/orbitFragment.glsl", gl);
