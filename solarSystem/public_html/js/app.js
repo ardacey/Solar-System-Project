@@ -89,110 +89,34 @@ async function main() {
         const orbitShader = await initShader("glsl/orbitVertex.glsl", "glsl/orbitFragment.glsl", gl);
         shapeShader = await initShader("glsl/ShapeVertex.glsl", "glsl/ShapeFragment.glsl", gl)
 
-        meshMap = await OBJ.downloadModels([
-            {
-                obj:"Models/SunModel/SunModel.obj",
-                mtl:"Models/SunModel/SunModel.mtl",
-                downloadMtlTextures: true,
-                name:"sunMesh"
-            },
-            {
-                obj:"Models/MercuryModel/MercuryModel.obj",
-                mtl:"Models/MercuryModel/MercuryModel.mtl",
-                downloadMtlTextures: true,
-                name:"mercuryMesh"
-            },
-            {
-                obj:"Models/VenusModel/VenusModel.obj",
-                mtl:"Models/VenusModel/VenusModel.mtl",
-                downloadMtlTextures: true,
-                name:"venusMesh"
-            },
-            {
-                obj:"Models/EarthModel/EarthModel.obj",
-                mtl:"Models/EarthModel/EarthModel.mtl",
-                downloadMtlTextures: true,
-                name:"earthMesh"
-            },
-            {
-                obj:"Models/MarsModel/MarsModel.obj",
-                mtl:"Models/MarsModel/MarsModel.mtl",
-                downloadMtlTextures: true,
-                name:"marsMesh"
-            },
-            {
-                obj:"Models/JupiterModel/JupiterModel.obj",
-                mtl:"Models/JupiterModel/JupiterModel.mtl",
-                downloadMtlTextures: true,
-                name:"jupiterMesh"
-            },
-            {
-                obj:"Models/SaturnModel/SaturnModel.obj",
-                mtl:"Models/SaturnModel/SaturnModel.mtl",
-                downloadMtlTextures: true,
-                name:"saturnMesh"
-            },
-            {
-                obj:"Models/UranusModel/UranusModel.obj",
-                mtl:"Models/UranusModel/UranusModel.mtl",
-                downloadMtlTextures: true,
-                name:"uranusMesh"
-            },
-            {
-                obj:"Models/NeptuneModel/NeptuneModel.obj",
-                mtl:"Models/NeptuneModel/NeptuneModel.mtl",
-                downloadMtlTextures: true,
-                name:"neptuneMesh"
-            },
-            {
-                obj:"Models/PlutoModel/PlutoModel.obj",
-                mtl:"Models/PlutoModel/PlutoModel.mtl",
-                downloadMtlTextures: true,
-                name:"plutoMesh"
-            },
-            {
-                obj:"Models/ArdaModel/ArdaModel.obj",
-                mtl:"Models/ArdaModel/ArdaModel.mtl",
-                downloadMtlTextures: true,
-                name:"ardaMesh"
-            },
-            {
-                obj:"Models/IsmailModel/IsmailModel.obj",
-                mtl:"Models/IsmailModel/IsmailModel.mtl",
-                downloadMtlTextures: true,
-                name:"ismailMesh"
-            },
-            {
-                obj:"Models/YigitalpModel/YigitalpModel.obj",
-                mtl:"Models/YigitalpModel/YigitalpModel.mtl",
-                downloadMtlTextures: true,
-                name:"yigitalpMesh"
-            },
-            {
-                obj:"Models/ZaferModel/ZaferModel.obj",
-                mtl:"Models/ZaferModel/ZaferModel.mtl",
-                downloadMtlTextures: true,
-                name:"zaferMesh"
-            },
-            {
-                obj:"Models/SpaceshipModel/SpaceshipModel.obj",
-                mtl:"Models/SpaceshipModel/SpaceshipModel.mtl",
-                downloadMtlTextures: true,
-                name:"spaceshipMesh"
-            },
-            {
-                obj:"Models/AsteroidModel/AsteroidModel.obj",
-                mtl:"Models/AsteroidModel/AsteroidModel.mtl",
-                downloadMtlTextures: true,
-                name:"asteroidMesh"
-            },
-            {
-                obj:"Models/AstronautModel/AstronautModel.obj",
-                mtl:"Models/AstronautModel/AstronautModel.mtl",
-                downloadMtlTextures: true,
-                name:"astronautMesh"
-            }
-        ])
+        const modelConfigs = [
+            { path: "SunModel", name: "sunMesh" },
+            { path: "MercuryModel", name: "mercuryMesh" },
+            { path: "VenusModel", name: "venusMesh" },
+            { path: "EarthModel", name: "earthMesh" },
+            { path: "MarsModel", name: "marsMesh" },
+            { path: "JupiterModel", name: "jupiterMesh" },
+            { path: "SaturnModel", name: "saturnMesh" },
+            { path: "UranusModel", name: "uranusMesh" },
+            { path: "NeptuneModel", name: "neptuneMesh" },
+            { path: "PlutoModel", name: "plutoMesh" },
+            { path: "ArdaModel", name: "ardaMesh" },
+            { path: "IsmailModel", name: "ismailMesh" },
+            { path: "YigitalpModel", name: "yigitalpMesh" },
+            { path: "ZaferModel", name: "zaferMesh" },
+            { path: "SpaceshipModel", name: "spaceshipMesh" },
+            { path: "AsteroidModel", name: "asteroidMesh" },
+            { path: "AstronautModel", name: "astronautMesh" },
+        ];
+
+        const modelPaths = modelConfigs.map(({ path, name }) => ({
+            obj: `Models/${path}/${path}.obj`,
+            mtl: `Models/${path}/${path}.mtl`,
+            downloadMtlTextures: true,
+            name: name,
+        }));
+
+        meshMap = await OBJ.downloadModels(modelPaths);
 
         // Create skybox
         const skyboxObject = SceneObject.CreateEmptySceneObject();
@@ -224,7 +148,7 @@ async function main() {
         const mercuryScript = BindSceneObject(mercuryObject, PlanetScript, [BodyProperties.Mercury]);
         mercuryScript.centralStar = sunScript;
         sceneObjects.push(mercuryObject);
-        
+
         // Mercury's orbit
         const mercuryOrbitMesh = new OrbitMesh(gl, BodyProperties.Mercury.orbitalDistance, [0.7, 0.5, 0.5]);
         const mercuryOrbitObject = new SceneObject(mercuryOrbitMesh, orbitShader);
@@ -358,7 +282,6 @@ async function main() {
         sceneObjects.push(spaceshipObject);
 
         for(let i = 0; i < 25; i++) createAsteroid();
-
 
         const AnotherArdaObject = new SceneObject(ardaMesh, celestialShader);
         BindSceneObject(AnotherArdaObject, SceneObjectScript);
