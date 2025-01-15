@@ -499,10 +499,12 @@ async function main() {
                     targetBody = selectedCenter.replace("center", "");
                     console.log("Camera locked to: " + targetBody);
                 }
-                massMultiplier = 1;
                 const massValue = document.getElementById('massValue');
                 const massSelector = document.getElementById("massRange");
-                massSelector.value = 1;
+                massMultiplier = scene.listOfSceneObjects.find(sceneObject =>
+                    sceneObject.Mesh && sceneObject.Mesh.meshOBJ && sceneObject.Mesh.meshOBJ.name === (targetBody.toLowerCase() + "Mesh")
+                ).getInstance(RigidBody).massMultiplier || 1;
+                massSelector.value = massMultiplier;
                 massValue.textContent = massMultiplier;
             });
 
@@ -510,6 +512,9 @@ async function main() {
             const massValue = document.getElementById('massValue');
             massSelector.addEventListener("change", function() {
                 massMultiplier = massSelector.value;
+                scene.listOfSceneObjects.find(sceneObject =>
+                    sceneObject.Mesh && sceneObject.Mesh.meshOBJ && sceneObject.Mesh.meshOBJ.name === (targetBody.toLowerCase() + "Mesh")
+                ).getInstance(RigidBody).massMultiplier = massMultiplier;
                 massValue.textContent = massMultiplier;
             });
         }
