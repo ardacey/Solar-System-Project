@@ -1,5 +1,5 @@
 class PhysicsSimulation {
-    timeStep = 600;
+    timeStep = 6000;
     physicsObjects = []
     constructor() {
 
@@ -183,6 +183,7 @@ class RigidBody extends SceneObjectScript{
 
     Update() {
         super.Update();
+        console.log(this.massMultiplier);
 
         if(!this.isStatic){
             vec3.scale(this.sceneObject.transform.position, this.position, CelestialBodyScript.DISTANCE_SCALE);
