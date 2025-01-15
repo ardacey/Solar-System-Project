@@ -592,23 +592,23 @@ class AstronautScript extends SceneObjectScript{
         super.Start();
         if (this.sceneObject.Mesh.meshOBJ.name === "ardaMesh") {
             this.sceneObject.transform.position = vec3.fromValues(100,100,100);
-            this.sceneObject.transform.scale = vec3.fromValues(1.0,1.0,0.5);
+            this.sceneObject.transform.scale = vec3.fromValues(10,10,5);
         } else if (this.sceneObject.Mesh.meshOBJ.name === "ismailMesh") {
             this.sceneObject.transform.position = vec3.fromValues(100,200,200);
-            this.sceneObject.transform.scale = vec3.fromValues(1.0,1.0,0.5);
+            this.sceneObject.transform.scale = vec3.fromValues(10,10,5);
         } else if (this.sceneObject.Mesh.meshOBJ.name === "yigitalpMesh") {
             this.sceneObject.transform.position = vec3.fromValues(200,200,300);
-            this.sceneObject.transform.scale = vec3.fromValues(1.0,1.0,0.5);
+            this.sceneObject.transform.scale = vec3.fromValues(10,10,5);
         } else if (this.sceneObject.Mesh.meshOBJ.name === "zaferMesh") {
             this.sceneObject.transform.position = vec3.fromValues(300,400,200);
-            this.sceneObject.transform.scale = vec3.fromValues(1.0,1.0,0.5);
+            this.sceneObject.transform.scale = vec3.fromValues(10,10,5);
         }
     }
 
     Update() {
         super.Update();
         this.UpdateTransform();
-        // this.UpdateRotation();
+        this.UpdateRotation();
     }
 
     UpdateTransform() {
@@ -689,7 +689,7 @@ class CameraFollowerScript extends SceneObjectScript{
             this.updateSpaceShipCameraVectors();
         } else if (this.targetBody) {
             let rigidBody = this.targetBody.getInstance(RigidBody);
-            rigidBody.isStatic = manual;
+            if(rigidBody)rigidBody.isStatic = manual;
             if (manual){
                 this.updateStaticCelestialCamera();
             }
