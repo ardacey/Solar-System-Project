@@ -27,6 +27,20 @@ function loadMeshData(objString, gl) {
     return new Mesh(obj,gl);
 }
 
+function drawBufferInfo(gl, bufferInfo, type, count, offset, instanceCount) {
+    type = type === undefined ? gl.TRIANGLES : type;
+    var indices = bufferInfo.indices;
+    var elementType = bufferInfo.elementType;
+    var numElements = count === undefined ? bufferInfo.numElements : count;
+    offset = offset === undefined ? 0 : offset;
 
+    if (elementType || indices) {
+            gl.drawElements(type, numElements, elementType === undefined ? gl.UNSIGNED_SHORT : bufferInfo.elementType, offset);
+
+    } else {
+            gl.drawArrays(type, offset, numElements);
+
+    }
+}
 
 

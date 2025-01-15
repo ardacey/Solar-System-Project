@@ -325,11 +325,11 @@ class Mesh{
                         ...this.bufferInfo.attribs,
                         indices: { numComponents: 3, data: indices }
                     });
-                    twgl.drawBufferInfo(this.gl, subsetBufferInfo);
+                    drawBufferInfo(this.gl, subsetBufferInfo);
                 }
             }
         } else {
-            twgl.drawBufferInfo(this.gl, this.bufferInfo);
+            drawBufferInfo(this.gl, this.bufferInfo);
         }
     }
 

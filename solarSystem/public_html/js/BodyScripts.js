@@ -403,7 +403,7 @@ class SkyboxScript extends SceneObjectScript {
             twgl.setUniforms(this.programInfo, uniforms);
 
             gl.depthMask(false);
-            twgl.drawBufferInfo(gl, this.bufferInfo);
+            drawBufferInfo(gl, this.bufferInfo);
             gl.depthMask(true);
 
         } catch (error) {
