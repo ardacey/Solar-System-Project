@@ -186,11 +186,6 @@ async function main() {
                 name:"asteroidMesh"
             },
             {
-                obj:"Models/names.obj",
-                downloadMtlTextures: false,
-                name:"namesMesh",
-            },
-            {
                 obj:"Models/AstronautModel/AstronautModel.obj",
                 mtl:"Models/AstronautModel/AstronautModel.mtl",
                 downloadMtlTextures: true,
@@ -352,24 +347,32 @@ async function main() {
 
         for(let i = 0; i < 25; i++) createAsteroid();
 
-        // Create Hall of Fame
-        const namesMesh = new Mesh(meshMap["namesMesh"],gl);
-        const namesObject = new SceneObject(namesMesh, celestialShader);
-        BindSceneObject(namesObject, SceneObjectScript);
-        namesObject.transform.position = vec3.fromValues(5000,5000,5000);
-        sceneObjects.push(namesObject);
 
-        const astronautMesh = new Mesh(meshMap["astronautMesh"],gl);
-        const astronautObject = new SceneObject(astronautMesh, celestialShader);
-        BindSceneObject(astronautObject, SceneObjectScript);
-        astronautObject.transform.position = vec3.fromValues(5005,5000,5000);
-        sceneObjects.push(astronautObject);
+        const AnotherArdaObject = new SceneObject(ardaMesh, celestialShader);
+        BindSceneObject(AnotherArdaObject, SceneObjectScript);
+        AnotherArdaObject.transform.position = vec3.fromValues(4996,5000,5000);
+        sceneObjects.push(AnotherArdaObject);
+
+        const AnotherIsmailObject = new SceneObject(ismailMesh, celestialShader);
+        BindSceneObject(AnotherIsmailObject, SceneObjectScript);
+        AnotherIsmailObject.transform.position = vec3.fromValues(4998,5000,5000);
+        sceneObjects.push(AnotherIsmailObject);
 
         const anotherSpaceshipMesh = new Mesh(meshMap["spaceshipMesh"],gl);
         const anotherSpaceshipObject = new SceneObject(anotherSpaceshipMesh, celestialShader);
         BindSceneObject(anotherSpaceshipObject, SceneObjectScript);
-        anotherSpaceshipObject.transform.position = vec3.fromValues(4995,5000,5000);
+        anotherSpaceshipObject.transform.position = vec3.fromValues(5000,5000,5000);
         sceneObjects.push(anotherSpaceshipObject);
+
+        const AnotherYigitalpObject = new SceneObject(yigitalpMesh, celestialShader);
+        BindSceneObject(AnotherYigitalpObject, SceneObjectScript);
+        AnotherYigitalpObject.transform.position = vec3.fromValues(5002,5000,5000);
+        sceneObjects.push(AnotherYigitalpObject);
+
+        const AnotherZaferObject = new SceneObject(zaferMesh, celestialShader);
+        BindSceneObject(AnotherZaferObject, SceneObjectScript);
+        AnotherZaferObject.transform.position = vec3.fromValues(5004,5000,5000);
+        sceneObjects.push(AnotherZaferObject);
 
         //Create CameraFollower
         const cameraObject = SceneObject.CreateEmptySceneObject();
@@ -389,7 +392,7 @@ async function main() {
             yigitalp:yigitalpObject,
             zafer:zaferObject,
             spaceship:spaceshipObject,
-            names:namesObject
+            names:anotherSpaceshipObject
         }]);
         sceneObjects.push(cameraObject);
 
@@ -530,7 +533,7 @@ async function main() {
             });
 
             document.addEventListener("wheel",(e)=>{
-                scene.camera.processZoom(e.deltaY <= 0 ? 1 : -1);
+                scene.camera.processZoom(e.deltaY <= 0 ? 0.4 : -0.4);
             });
         }
 
