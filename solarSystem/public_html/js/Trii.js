@@ -196,6 +196,15 @@ class SceneObject {
     static CreateEmptySceneObject(){
         return new SceneObject();
     }
+
+    isInstance(instance){
+        let returnvalue = this.SceneObjectScripts.find(script => script instanceof instance);
+        return !!returnvalue;
+    }
+    getInstance(instance){
+        let returnvalue = this.SceneObjectScripts.find(script => script instanceof instance);
+        return returnvalue;
+    }
 }
 
 class Transform {

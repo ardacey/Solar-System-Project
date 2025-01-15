@@ -128,6 +128,8 @@ async function main() {
         const sunMesh = new Mesh(meshMap["sunMesh"],gl);
         const sunObject = new SceneObject(sunMesh, sunShader);
         BindSceneObject(sunObject, StarScript, [BodyProperties.Sun]);
+        BindSceneObject(sunObject, RigidBody);
+
         sceneObjects.push(sunObject);
         const sunScript = sunObject.SceneObjectScripts.find(script => script instanceof StarScript);
 
@@ -135,6 +137,8 @@ async function main() {
         const mercuryMesh = new Mesh(meshMap["mercuryMesh"],gl);
         const mercuryObject = new SceneObject(mercuryMesh, celestialShader);
         const mercuryScript = BindSceneObject(mercuryObject, PlanetScript, [BodyProperties.Mercury]);
+        //BindSceneObject(mercuryObject, RigidBody);
+
         mercuryScript.centralStar = sunScript;
         sceneObjects.push(mercuryObject);
 
@@ -147,6 +151,8 @@ async function main() {
         const venusMesh = new Mesh(meshMap["venusMesh"],gl);
         const venusObject = new SceneObject(venusMesh, celestialShader);
         const venusScript = BindSceneObject(venusObject, PlanetScript, [BodyProperties.Venus]);
+        //BindSceneObject(venusObject, RigidBody);
+
         venusScript.centralStar = sunScript;
         sceneObjects.push(venusObject);
 
@@ -159,6 +165,8 @@ async function main() {
         const earthMesh = new Mesh(meshMap["earthMesh"],gl);
         const earthObject = new SceneObject(earthMesh, celestialShader);
         const earthScript = BindSceneObject(earthObject, PlanetScript, [BodyProperties.Earth]);
+        BindSceneObject(earthObject, RigidBody);
+
         earthScript.centralStar = sunScript;
         sceneObjects.push(earthObject);
 
@@ -606,12 +614,17 @@ async function main() {
 
     scene.Start();
 
+    const simulation = new SolarSimulation(scene);
+
+
     render(0);
     function render(timeStamp) {
         time.UpdateTime(timeStamp);
         resizeCanvasToDisplaySize();
 
         clearGlBuffer(gl);
+
+        simulation.stepSim();
 
         scene.Update();
 
