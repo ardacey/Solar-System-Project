@@ -66,7 +66,7 @@ class SolarSimulation extends PhysicsSimulation{
 
             // Calculate orbital velocity magnitude for circular orbit
             // v = sqrt(G * M / r) where M is the mass of the central body
-            const velocityMagnitude = Math.sqrt(this.G * centralBody.mass / r);
+            const velocityMagnitude = Math.sqrt(this.G * centralBody.getMass() / r);
 
             // Calculate direction perpendicular to radius vector in the orbital plane
             // For simplicity, we'll assume orbits in the X-Z plane
@@ -91,8 +91,8 @@ class SolarSimulation extends PhysicsSimulation{
         let maxMass = 0;
 
         for (const obj of this.physicsObjects) {
-            if (obj.mass > maxMass) {
-                maxMass = obj.mass;
+            if (obj.getMass() > maxMass) {
+                maxMass = obj.getMass();
                 centralBody = obj;
             }
         }
@@ -127,7 +127,7 @@ class SolarSimulation extends PhysicsSimulation{
 
                 // Calculate gravitational force magnitude
                 // F = G * (m1 * m2) / r^2
-                const forceMagnitude = this.G * (obj1.mass * obj2.mass) / (r * r);
+                const forceMagnitude = this.G * (obj1.getMass() * obj2.getMass()) / (r * r);
 
                 // Calculate force vectors
                 const force = vec3.scale(vec3.create(), direction, forceMagnitude);
@@ -151,6 +151,7 @@ class SolarSimulation extends PhysicsSimulation{
 class RigidBody extends SceneObjectScript{
     force;
     mass;
+    massMultiplier = 1;
     acceleration;
     velocity;
     position;
@@ -201,7 +202,11 @@ class RigidBody extends SceneObjectScript{
     }
 
     simForce() {
-        this.acceleration = vec3.scale(vec3.create(), this.force, 1/this.mass);
+        this.acceleration = vec3.scale(vec3.create(), this.force, 1/this.getMass());
+    }
+
+    getMass(){
+        return this.mass * this.massMultiplier;
     }
 
     simStep(sdt){
