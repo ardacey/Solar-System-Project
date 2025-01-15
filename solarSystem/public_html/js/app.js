@@ -83,7 +83,7 @@ async function main() {
 
     async function setupScene() {
         // Initialize shaders
-        celestialShader = await initShader("glsl/PlanetVertex.glsl", "glsl/PlanetFragment.glsl", gl);
+        celestialShader = await initShader("glsl/SunVertex.glsl", "glsl/SunFragment.glsl", gl);
         const sunShader = await initShader("glsl/test2vertex.glsl", "glsl/test2frag.glsl", gl);
         const haloShader = await initShader("glsl/haloVertex.glsl", "glsl/haloFrag.glsl", gl);
         const skyboxShader = await initShader("glsl/skybox-vertex.glsl", "glsl/skybox-fragment.glsl", gl);
@@ -532,6 +532,8 @@ async function main() {
                 ).getInstance(RigidBody).massMultiplier = massMultiplier;
                 massValue.textContent = massMultiplier;
             });
+
+            const warningButton = document.getElementById("warning");
         }
         
         let isHelpMenuVisible = false;
