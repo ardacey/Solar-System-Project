@@ -196,6 +196,10 @@ class RigidBody extends SceneObjectScript{
 
     }
 
+    toPosition(position){
+        vec3.scale(this.position, position , 1/CelestialBodyScript.DISTANCE_SCALE);
+    }
+
     simForce() {
         this.acceleration = vec3.scale(vec3.create(), this.force, 1/this.mass);
     }
