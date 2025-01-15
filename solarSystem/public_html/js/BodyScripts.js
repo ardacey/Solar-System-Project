@@ -26,15 +26,25 @@ class CelestialBodyScript extends SceneObjectScript {
         super.Start();
     }
 
+    totalTime = 0;
+
+
+
+
     Update() {
         super.Update();
         this.updateRotation();
         this.updateTransform();
+        this.totalTime+=time.deltaTime/1000;
+        this.sceneObject.shader.setUniform1f("time" , this.totalTime);
+        this.sceneObject.shader.setUniform1f("highTemp" , 5700);
+        this.sceneObject.shader.setUniform1f("lowTemp" , 500);
+
         // The Mesh class will handle the drawing
     }
 
     updateRotation() {
-        const rotationAngle = (2 * Math.PI * time.deltaTime)*100000 / this.rotationPeriod;
+        const rotationAngle = (2 * Math.PI * time.deltaTime)*36000 / this.rotationPeriod;
         this.rotation.y += rotationAngle;
         this.sceneObject.transform.rotation = vec3.fromValues(
             this.rotation.x,
@@ -133,7 +143,7 @@ class PlanetScript extends CelestialBodyScript{
         this.direction = vec3.fromValues(0, 0, 1);
         this.orbitRadius = this.orbitalDistance * CelestialBodyScript.DISTANCE_SCALE;
         this.physicDis = this.orbitalDistance * CelestialBodyScript.DISTANCE_SCALE * 0.98;
-
+        this.planetShader = this.sceneObject.shader
 
         this.updateOrbitalPosition();
 
@@ -142,12 +152,14 @@ class PlanetScript extends CelestialBodyScript{
     Start() {
         super.Start();
 
-        console.log(this.sceneObject.transform.position)
 
     }
 
     Update() {
         super.Update();
+        this.planetShader.setUniforms({
+            'lightPos': [0, 0, 0],  // Sun is at origin
+        });
         this.updateTransform();
     }
 
@@ -746,6 +758,40 @@ class HaloScript extends CelestialBodyScript {
     Update() {
 
         super.Update();
-        this.sceneObject.transform.position = this.sunObject.transform.position;
+        this.sceneObject.transform.position = this.sunObject.transform.position;}}
+
+
+    class MakeEverythingSun {
+    constructor(sceneObject, sunShader, planetShader) {
+        this.sceneObject = sceneObject
+        this.effectedObjects = []
+        this.sunShader = sunShader;
+        this.planetShader = planetShader;
+        this.isSun = false
+    }
+
+    makeSun(){
+        for (let i = 0; i < this.sceneObject.scene.listOfSceneObjects.length; i++) {
+            let obj = this.sceneObject.scene.listOfSceneObjects[i];
+            console.log(obj)
+            if(obj.isInstance(PlanetScript)){
+                this.effectedObjects.push(obj);
+                obj.shader = this.sunShader;
+            }
+        }
+        this.isSun = true
+    }
+
+    okMakeThemNormalAgain(){
+        for (const obj of this.effectedObjects) {
+            obj.shader = this.planetShader;
+        }
+        this.isSun = false;
+    }
+
+    PRESSSSSFORRRSUNNNN(){
+        if(this.isSun){
+            this.okMakeThemNormalAgain()
+        }else {this.makeSun()}
     }
 }

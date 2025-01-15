@@ -2,11 +2,12 @@ class Time{
     perfectFrameTime = 1000 / 60;
     deltaTime = 0;
     lastTimestamp = 0;
+    elapsedTime = 0
 
     UpdateTime(timestamp){
         this.deltaTime = (timestamp - this.lastTimestamp) / this.perfectFrameTime;
         this.lastTimestamp = timestamp;
-
+        this.elapsedTime += this.deltaTime;
     }
 }
 
@@ -312,6 +313,7 @@ class Mesh{
 
         shader.useProgram();
         twgl.setBuffersAndAttributes(gl, shader.programInfo, this.bufferInfo);
+
 
         if (this.meshOBJ.materialsByIndex) {
             for (const [index, material] of Object.entries(this.meshOBJ.materialsByIndex)) {

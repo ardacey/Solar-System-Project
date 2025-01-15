@@ -5,6 +5,7 @@ let celestialShader;
 let meshMap;
 const sceneObjects = [];
 let targetBody = "Sun";
+let makeEverythingSun;
 
 let lastAsteroidTime = 0;
 const asteroidSpawnInterval = 5000;
@@ -83,9 +84,9 @@ async function main() {
 
     async function setupScene() {
         // Initialize shaders
-        celestialShader = await initShader("glsl/SunVertex.glsl", "glsl/SunFragment.glsl", gl);
+        celestialShader = await initShader("glsl/PlanetVertex.glsl", "glsl/PlanetFragment.glsl", gl);
         const sunShader = await initShader("glsl/test2vertex.glsl", "glsl/test2frag.glsl", gl);
-        const haloShader = await initShader("glsl/haloVertex.glsl", "glsl/haloFrag.glsl", gl);
+        const haloShader = await initShader("glsl/haloVertex.glsl", "glsl/haloFrag.glsl",gl);
         const skyboxShader = await initShader("glsl/skybox-vertex.glsl", "glsl/skybox-fragment.glsl", gl);
         const orbitShader = await initShader("glsl/orbitVertex.glsl", "glsl/orbitFragment.glsl", gl);
         shapeShader = await initShader("glsl/ShapeVertex.glsl", "glsl/ShapeFragment.glsl", gl)
@@ -133,6 +134,7 @@ async function main() {
 
         sceneObjects.push(sunObject);
         const sunScript = sunObject.SceneObjectScripts.find(script => script instanceof StarScript);
+        makeEverythingSun = new MakeEverythingSun(sunObject,sunShader,celestialShader);
 
         // Create Mercury
         const mercuryMesh = new Mesh(meshMap["mercuryMesh"],gl);
@@ -356,6 +358,8 @@ async function main() {
         // Create scene
         const scene = new Scene(sceneObjects, new Camera(vec3.fromValues(0, 0, 360)), canvas);
         return scene;
+
+
     }
 
     const scene = await setupScene();
@@ -534,6 +538,10 @@ async function main() {
             });
 
             const warningButton = document.getElementById("warning");
+            console.log(warningButton)
+            warningButton.addEventListener("click", (e)=> {
+               makeEverythingSun.PRESSSSSFORRRSUNNNN();
+            });
         }
         
         let isHelpMenuVisible = false;

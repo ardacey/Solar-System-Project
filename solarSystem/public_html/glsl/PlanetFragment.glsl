@@ -16,79 +16,49 @@ struct Material {
 
 uniform Material material;
 uniform vec3 lightPos;
+uniform vec3 viewPos;
 
 in vec3 FragPos;
 in vec3 Normal;
 in vec2 TexCoords;
+in vec3 WorldPos;
 
-
-uniform vec3 viewPos;
-
-in vec3 vNormal;
-in vec3 vPosition;
-
-out vec4 fragColor;
-
-float inverseLerp(float minValue, float maxValue, float v) {
-    return (v - minValue) / (maxValue - minValue);
-}
-
-float remap(float inMin, float inMax, float outMin, float outMax, float v) {
-    float t = inverseLerp(inMin, inMax, v);
-    return mix(outMin, outMax, t);
-}
+out vec4 FragColor;
 
 void main() {
-    vec3 modelColour = vec3(0.5);
-    vec3 lighting = vec3(0.0);
+    // Base lighting parameters
+    vec3 N = normalize(Normal);
+    vec3 L = normalize(lightPos - FragPos);
+    vec3 V = normalize(viewPos - FragPos);
+    vec3 H = normalize(L + V);  // Half vector for Blinn-Phong
 
-    vec3 normal = normalize(vNormal);
-    vec3 viewDir = normalize(viewPos - vPosition);
+    // Get material properties
+    vec3 albedo = material.diffuseColor * vec3(texture(material.diffuse, TexCoords));
+    float roughness = 1.0 - material.shininess / 256.0;
 
     // Ambient
-    vec3 ambient = vec3(1.0);
+    vec3 ambient = 0.01 * albedo;
 
-    // Hemi
-    vec3 skyColour = vec3(0.0, 0.3, 0.6);
-    vec3 groundColour = vec3(0.6, 0.3, 0.1);
+    // Diffuse
+    float NdotL = max(dot(N, L), 0.0);
+    vec3 diffuse = albedo * NdotL*2.0;
 
-    vec3 hemi = mix(groundColour, skyColour, remap(-1.0, 1.0, 0.0, 1.0, normal.y));
+    // Specular (using Blinn-Phong)
+    float NdotH = max(dot(N, H), 0.0);
+    float specularStrength = pow(NdotH, material.shininess*2.0);
+    vec3 specular = vec3(0.5) * specularStrength;
 
-    // Diffuse lighting
-    vec3 lightDir = normalize(vec3(1.0, 1.0, 1.0));
-    vec3 lightColour = vec3(1.0, 1.0, 0.9);
-    float dp = max(0.0, dot(lightDir, normal));
+    // Distance attenuation (softer falloff)
+    float distance = length(lightPos - FragPos);
 
-    float fullShadow = smoothstep(0.5, 0.505, dp);
+    // Combine components
+    vec3 finalColor = (ambient + (diffuse + specular) );
 
-    // Calculate the partially shadowed area by doing another step, but using a
-    // higher threshold value than the fully shadowed area. Make the output from
-    // this step 0.5 in the partially shadowed area, and 1.0 in the lit area.
-    float partialShadow = mix(0.5, 1.0, smoothstep(0.65, 0.655, dp));
+    // HDR tonemapping
+    finalColor = finalColor / (finalColor + vec3(1.0));
 
-    // In this last step, you combine them.
-    dp = min(partialShadow, fullShadow);
+    // Gamma correction
+    finalColor = pow(finalColor, vec3(1.0/2.2));
 
-    vec3 specular = vec3(0.0);
-    vec3 diffuse = dp * lightColour;
-
-    // Specular
-    vec3 r = normalize(reflect(-lightDir, normal));
-    float phongValue = max(0.0, dot(viewDir, r));
-    phongValue = pow(phongValue, 128.0);
-
-    // Fresnel
-    float fresnel = 1.0 - max(0.0, dot(viewDir, normal));
-    fresnel = pow(fresnel, 2.0);
-    fresnel *= step(0.7, fresnel);
-
-    specular += phongValue;
-    specular = smoothstep(0.5, 0.51, specular);
-
-    lighting = hemi * (fresnel + 0.2) + diffuse * 0.8;
-
-    vec3 colour = modelColour * lighting + specular;
-
-    fragColor = vec4(pow(colour, vec3(1.0 / 2.2)), 1.0);
-
+    FragColor = vec4(finalColor, 1.0);
 }
