@@ -428,6 +428,10 @@ class SpaceshipScript extends SceneObjectScript {
         this.UpdateTransform();
         this.UpdateRotation();
         this.CheckCollision();
+        shapeShader.setUniform3FVector("spotLightPos", this.sceneObject.transform.position);
+        shapeShader.setUniform3FVector("spotLightDir", this.sceneObject.scene.camera.front);
+        shapeShader.setUniform1f("spotLightCutOff", Math.cos(Math.PI / 4));
+        shapeShader.setUniform1f("spotLightOuterCutOff", Math.cos(Math.PI / 3));
     }
 
     UpdateTransform() {

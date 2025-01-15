@@ -286,9 +286,8 @@ async function main() {
 
         // Create Spaceship
         const spaceshipMesh = new Mesh(meshMap["spaceshipMesh"],gl);
-        const spaceshipObject = new SceneObject(spaceshipMesh, celestialShader);
+        const spaceshipObject = new SceneObject(spaceshipMesh, shapeShader);
         const spaceshipScript = BindSceneObject(spaceshipObject, SpaceshipScript, [BodyProperties.Spaceship]);
-        BindSceneObject(spaceshipObject, RigidBody);
 
         spaceshipScript.centralStar = sunScript;
         sceneObjects.push(spaceshipObject);
@@ -515,11 +514,13 @@ async function main() {
                 }
                 const massValue = document.getElementById('massValue');
                 const massSelector = document.getElementById("massRange");
-                massMultiplier = scene.listOfSceneObjects.find(sceneObject =>
-                    sceneObject.Mesh && sceneObject.Mesh.meshOBJ && sceneObject.Mesh.meshOBJ.name === (targetBody.toLowerCase() + "Mesh")
-                ).getInstance(RigidBody).massMultiplier || 1;
-                massSelector.value = massMultiplier;
-                massValue.textContent = massMultiplier;
+                if (targetBody !== "Spaceship") {
+                    massMultiplier = scene.listOfSceneObjects.find(sceneObject =>
+                        sceneObject.Mesh && sceneObject.Mesh.meshOBJ && sceneObject.Mesh.meshOBJ.name === (targetBody.toLowerCase() + "Mesh")
+                    ).getInstance(RigidBody).massMultiplier || 1;
+                    massSelector.value = massMultiplier;
+                    massValue.textContent = massMultiplier;
+                }
             });
 
             const massSelector = document.getElementById("massRange");

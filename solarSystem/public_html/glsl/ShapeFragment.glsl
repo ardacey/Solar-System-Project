@@ -15,8 +15,15 @@ struct Material {
 };
 
 uniform Material material;
-uniform vec3 lightPos;
-uniform vec3 viewPos;
+uniform vec3 lightPos;         // Position of the light
+uniform vec3 lightColor;       // Color of the light
+uniform vec3 viewPos;          // Camera position
+
+// Spotlight parameters
+uniform vec3 spotLightPos;     // Position of the spotlight
+uniform vec3 spotLightDir;     // Direction of the spotlight
+uniform float spotLightCutOff; // Inner cutoff angle of the spotlight
+uniform float spotLightOuterCutOff; // Outer cutoff angle of the spotlight
 
 in vec3 FragPos;
 in vec3 Normal;
@@ -26,7 +33,7 @@ out vec4 FragColor;
 
 void main() {
     // Ambient
-    vec3 ambient = vec3(0.1)*material.ambientColor * vec3(texture(material.ambient, TexCoords));
+    vec3 ambient = vec3(0.1) * material.ambientColor * vec3(texture(material.ambient, TexCoords));
 
     // Normal mapping
     vec3 normal = normalize(Normal);
@@ -34,7 +41,7 @@ void main() {
         normal = normalize(vec3(texture(material.normal, TexCoords)) * 2.0 - 1.0);
     }
 
-    // Diffuse
+    // Diffuse and Specular lighting
     vec3 lightDir = normalize(lightPos - FragPos);
     float diff = max(dot(normal, lightDir), 0.0);
     vec3 diffuse = material.diffuseColor * diff * vec3(texture(material.diffuse, TexCoords));
@@ -45,7 +52,15 @@ void main() {
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
     vec3 specular = material.specularColor * spec * vec3(texture(material.specular, TexCoords));
 
-    FragColor = vec4(ambient + diffuse + specular, 1.0);
+    // Spotlight effect
+    vec3 spotDir = normalize(spotLightPos - FragPos); // Direction to the spotlight
+    float theta = dot(spotDir, normalize(spotLightDir)); // Angle between spotlight direction and the surface normal
+    float epsilon = spotLightCutOff - spotLightOuterCutOff;
+    float intensity = clamp((theta - spotLightOuterCutOff) / epsilon, 0.0, 1.0); // Smooth attenuation between cutoffs
 
+    // Spotlight contribution
+    vec3 spotlight = intensity * diffuse + specular;
 
+    // Final color with spotlight
+    FragColor = vec4(ambient + spotlight, 1.0);
 }
